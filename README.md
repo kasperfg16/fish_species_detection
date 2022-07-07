@@ -27,12 +27,20 @@ Repo for fish species detection project at Aalborg University
     conda install pytorch torchvision -c pytorch
     ```
 
+    ### Install other dependancies
+
+    ``` bash
+    pip install pandas
+    ```
+
 ## Inspiration
 
 1. loading of images:
-https://ryanwingate.com/intro-to-machine-learning/deep-learning-with-pytorch/loading-image-data-into-pytorch/
+
+    https://ryanwingate.com/intro-to-machine-learning/deep-learning-with-pytorch/loading-image-data-into-pytorch/
 
 2. https://docs.microsoft.com/en-us/learn/modules/intro-computer-vision-pytorch/2-image-data
 
 3. Using a pretrained model to perform image classification
-https://github.com/LeanManager/PyTorch_Image_Classifier/blob/master/train.py
+
+    https://github.com/LeanManager/PyTorch_Image_Classifier/blob/master/train.py

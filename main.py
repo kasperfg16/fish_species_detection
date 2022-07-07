@@ -1,41 +1,21 @@
-#Import the packages needed.
-import torch
-import torchvision
-import matplotlib.pyplot as plt
 import numpy as np
-import argparse
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sb
+import torch
+import torch.nn.functional as F
 import model_functions
+import processing_functions
+import argparse
+import extra_functions as ef
 
 from torchvision import datasets, transforms, models
-from torchvision.transforms import ToTensor
 from collections import OrderedDict
-from torch import nn
 from torch import optim
+from torch import nn
+from unittest import case
 
 parser = argparse.ArgumentParser(description='Train Image Classifier')
-
-def imshow(image, ax=None, title=None, normalize=True):
-    """Imshow for Tensor."""
-    if ax is None:
-        fig, ax = plt.subplots()
-    image = image.numpy().transpose((1, 2, 0))
-
-    if normalize:
-        mean = np.array([0.5, 0.5, 0.5])
-        std = np.array([0.5, 0.5, 0.5])
-        image = std * image + mean
-        image = np.clip(image, 0, 1)
-
-    ax.imshow(image)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.tick_params(axis='both', length=0)
-    ax.set_xticklabels('')
-    ax.set_yticklabels('')
-
-    return ax
 
 # Command line arguments
 parser.add_argument('--arch', type = str, default = 'vgg', help = 'NN Model Architecture')
@@ -47,70 +27,26 @@ parser.add_argument('--save_dir', type = str, default = 'checkpoint.pth', help =
 
 arguments = parser.parse_args()
 
-# Load in data
-transform = transforms.Compose([transforms.Resize(255),
-                                transforms.CenterCrop(224),
-                                transforms.ToTensor()])
+# Image data directories
+img_folder_path = 'images'
 
-dataset = datasets.ImageFolder('images', transform=transform)
+data_dir = ef.make_data_sets(img_folder_path)
 
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=True)
+# Divide images into train, test, and validation folders:
+train_dir = data_dir + '/train'
+valid_dir = data_dir + '/validation'
+test_dir = data_dir + '/test'
 
-# Looping through it, get a batch on each loop 
-for images, labels in dataloader:
-    pass
+# Transforms for the training, validation, and testing sets
+training_transforms, validation_transforms, testing_transforms = processing_functions.data_transforms()
 
-# Get one batch
-images, labels = next(iter(dataloader))
+# Load the datasets with ImageFolder
+training_dataset, validation_dataset, testing_dataset = processing_functions.load_datasets(train_dir, training_transforms, valid_dir, validation_transforms, test_dir, testing_transforms)
 
-data_dir = 'cod_and_others_training_data'
-
-transform = transforms.Compose([transforms.Resize(255),
-                                transforms.CenterCrop(224),
-                                transforms.ToTensor()])
-dataset = datasets.ImageFolder(data_dir, 
-                               transform=transform)
-dataloader = torch.utils.data.DataLoader(dataset, 
-                                         batch_size=32, 
-                                         shuffle=True)
-
-data_dir = 'loading-image-data-into-pytorch/Cat_Dog_data'
-
-train_transforms = transforms.Compose([
-        transforms.RandomRotation(30),
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.5, 0.5, 0.5], 
-        [0.5, 0.5, 0.5])])
-
-test_transforms = transforms.Compose([
-        transforms.Resize(255),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize([0.5, 0.5, 0.5], 
-        [0.5, 0.5, 0.5])])
-
-validate_transforms = transforms.Compose([
-        transforms.Resize(255),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize([0.5, 0.5, 0.5], 
-        [0.5, 0.5, 0.5])])
-
-train_data = datasets.ImageFolder(data_dir + '/train', 
-                                  transform=train_transforms)
-test_data = datasets.ImageFolder(data_dir + '/test', 
-                                 transform=test_transforms)
-validate_data = datasets.ImageFolder(data_dir + '/validate', 
-                                 transform=test_transforms)
-
-trainloader = torch.utils.data.DataLoader(train_data, 
-                                          batch_size=32)
-testloader = torch.utils.data.DataLoader(test_data, 
-                                         batch_size=32)
-validateloader = torch.utils.data.DataLoader(validate_data, 
-                                         batch_size=32)
+# Using the image datasets and the trainforms, define the dataloaders
+train_loader = torch.utils.data.DataLoader(training_dataset, batch_size=64, shuffle=True)
+validate_loader = torch.utils.data.DataLoader(validation_dataset, batch_size=32)
+test_loader = torch.utils.data.DataLoader(testing_dataset, batch_size=32)
 
 # Build and train the neural network (Transfer Learning)
 if arguments.arch == 'vgg':
@@ -119,7 +55,7 @@ if arguments.arch == 'vgg':
 elif arguments.arch == 'alexnet':
     input_size = 9216
     model = models.alexnet(pretrained=True)
-
+    
 print(model)
 
 # Freeze pretrained model parameters to avoid backpropogating through them
@@ -141,8 +77,8 @@ criterion = nn.NLLLoss()
 # Gradient descent optimizer
 optimizer = optim.Adam(model.classifier.parameters(), lr=arguments.learning_rate)
     
-model_functions.train_classifier(model, optimizer, criterion, arguments.epochs, trainloader, validate_loader, arguments.gpu)
+model_functions.train_classifier(model, optimizer, criterion, arguments.epochs, train_loader, validate_loader, arguments.gpu)
     
-model_functions.test_accuracy(model, trainloader, arguments.gpu)
+model_functions.test_accuracy(model, test_loader, arguments.gpu)
 
-model_functions.save_checkpoint(model, train_data, arguments.arch, arguments.epochs, arguments.learning_rate, arguments.hidden_units, input_size)  
+model_functions.save_checkpoint(model, training_dataset, arguments.arch, arguments.epochs, arguments.learning_rate, arguments.hidden_units, input_size)  
