@@ -17,7 +17,7 @@ def make_data_sets(img_folder_path, percent_train=80):
     if os.path.exists(data_dir):
         shutil.rmtree(data_dir)
 
-    subfolders = next(os.walk(img_folder_path))[1]
+    subfolders = next(os.walk(img_folder_path))
 
     for subfolder in subfolders:
         imgs_subfolder_path = img_folder_path + subfolder
