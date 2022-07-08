@@ -81,4 +81,4 @@ model_functions.train_classifier(model, optimizer, criterion, arguments.epochs, 
     
 model_functions.test_accuracy(model, test_loader, arguments.gpu)
 
-model_functions.save_checkpoint(model, training_dataset, arguments.arch, arguments.epochs, arguments.learning_rate, arguments.hidden_units, input_size)  
+model_functions.save_checkpoint(model, training_dataset, arguments.arch, arguments.epochs, arguments.learning_rate, arguments.hidden_units, input_size)

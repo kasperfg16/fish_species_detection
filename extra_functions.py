@@ -1,6 +1,6 @@
 import os, os.path, shutil
-import glob 
 import shutil
+import json
 
 def make_data_sets(img_folder_path, percent_train=80):
     '''
@@ -17,8 +17,13 @@ def make_data_sets(img_folder_path, percent_train=80):
     if os.path.exists(data_dir):
         shutil.rmtree(data_dir)
 
+    # Find subfolders in /images
     subfolders = next(os.walk(img_folder_path))[1]
 
+    check = False
+
+    # For each subfolder, devide into train and test with given percentage.
+    # Also create a JSON file with class labels
     for subfolder in subfolders:
         imgs_subfolder_path = img_folder_path + subfolder
         abs_path = os.path.abspath(imgs_subfolder_path)
@@ -30,7 +35,6 @@ def make_data_sets(img_folder_path, percent_train=80):
         num_test = round(num_images/100 * (100-percent_train))
 
         count = 1
-
 
         for image in images:
                 if count <= num_train:
@@ -54,7 +58,28 @@ def make_data_sets(img_folder_path, percent_train=80):
                     shutil.copy(old_image_path, new_image_path)
 
                 count += 1
+        
+        # Data to be written into JSON file
+        addition ={subfolder : subfolder}
 
+        if not check:
+            # Serializing json 
+            json_object = json.dumps(addition)
+            # Writing to classes_dictonary.json
+            with open("classes_dictonary.json", "w") as outfile:
+                outfile.write(json_object)
+            check = True
+        else:
+            with open('classes_dictonary.json') as f:
+                data = json.load(f)
+            
+            data.update(addition)
+
+            # Adding class names to classes_dictonary.json
+            with open('classes_dictonary.json', 'w') as f:
+                json.dump(data, f)
+
+    # Create a validation folder
     folder_name = "validation"
     source_dir = img_folder_path
     destination_dir = os.path.join(data_dir, folder_name)

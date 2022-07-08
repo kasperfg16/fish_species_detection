@@ -44,3 +44,5 @@ Repo for fish species detection project at Aalborg University
 3. Using a pretrained model to perform image classification
 
     https://github.com/LeanManager/PyTorch_Image_Classifier/blob/master/train.py
+
+    Youtube video: https://www.youtube.com/watch?v=zFA8Cm13Xmk&t=513s
