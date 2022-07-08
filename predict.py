@@ -20,7 +20,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Image Classifier Predictions')
 
 # Command line arguments
-parser.add_argument('--image_dir', type = str, default = "images\cod\GOPR1930.JPG", help = 'Path to image')
+parser.add_argument('--image_dir', type = str, default = "images/cod/GOPR1930.JPG", help = 'Path to image')
 parser.add_argument('--checkpoint', type = str, default = 'checkpoint.pth', help = 'Path to checkpoint')
 parser.add_argument('--topk', type = int, default = 5, help = 'Top k classes and probabilities')
 parser.add_argument('--json', type = str, default = 'classes_dictonary.json', help = 'class_to_name json file')
@@ -44,7 +44,7 @@ image = processing_functions.process_image(arguments.image_dir, checkpoint['hidd
 processing_functions.imshow(image)
 
 # Highest k probabilities and the indices of those probabilities corresponding to the classes (converted to the actual class labels)
-probabilities, classes = model_functions.predict(arguments.image_dir, model, arguments.topk, arguments.gpu)  
+probabilities, classes = model_functions.predict(arguments.image_dir, model, arguments.topk, arguments.gpu, checkpoint['hidden_layer_units'])  
 
 print(probabilities)
 print(classes)

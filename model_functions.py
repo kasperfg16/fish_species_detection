@@ -159,13 +159,13 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                     model.train()      
                     
                     
-def predict(image_path, model, topk=5, gpu='cuda'):
+def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
     
     model.to(gpu)
     
-    image = processing_functions.process_image(image_path)
+    image = processing_functions.process_image(image_path, hidden_size)
     
     # Convert image to PyTorch tensor first
     image = torch.from_numpy(image).type(torch.cuda.FloatTensor)
