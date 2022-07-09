@@ -20,8 +20,8 @@ def make_data_sets(img_folder_path, percent_train=80):
     # Find subfolders in /images
     subfolders = next(os.walk(img_folder_path))[1]
 
-    print("Number of classes: ", num_classes)
     num_classes = len(subfolders)
+    print("Number of classes: ", num_classes)
 
     check = False
 
