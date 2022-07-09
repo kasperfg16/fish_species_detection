@@ -129,7 +129,7 @@ def display_image(image_dir, class_to_name_dict, classes, hidden_size, probabili
     imshow(image, plot_1, title=class_title);
 
     # Convert from the class integer encoding to actual flower names
-    class_names = [flower_to_name[i] for i in classes]
+    class_names = [class_to_name_dict[i] for i in classes]
 
     # Plot the probabilities for the top 5 classes as a bar graph
     plt.subplot(2,1,2)
