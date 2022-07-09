@@ -114,13 +114,13 @@ def load_json(json_file):
     
     
 # Function to display an image along with the top 5 classes
-def display_image(image_dir, flower_to_name, classes):
+def display_image(image_dir, flower_to_name, classes, hidden_size):
 
     # Plot flower input image
     plt.figure(figsize = (6,10))
     plot_1 = plt.subplot(2,1,1)
 
-    image = process_image(image_dir)
+    image = process_image(image_dir, hidden_size)
     
     key = image_dir.split('/')[-2]
 

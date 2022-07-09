@@ -189,7 +189,7 @@ def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
     # Invert the dictionary so you get a mapping from index to class.
     
     idx_to_class = {value: key for key, value in model.class_to_idx.items()}
-    print(idx_to_class)
+    #print(idx_to_class)
     
     top_classes = [idx_to_class[index] for index in idx_to_class]
     
