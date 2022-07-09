@@ -114,7 +114,7 @@ def load_json(json_file):
     
     
 # Function to display an image along with the top 5 classes
-def display_image(image_dir, flower_to_name, classes, hidden_size, probabilities):
+def display_image(image_dir, class_to_name_dict, classes, hidden_size, probabilities):
 
     # Plot flower input image
     plt.figure(figsize = (6,10))
@@ -124,16 +124,16 @@ def display_image(image_dir, flower_to_name, classes, hidden_size, probabilities
     
     key = image_dir.split('/')[-2]
 
-    flower_title = flower_to_name[key]
+    class_title = class_to_name_dict[key]
 
-    imshow(image, plot_1, title=flower_title);
+    imshow(image, plot_1, title=class_title);
 
     # Convert from the class integer encoding to actual flower names
-    flower_names = [flower_to_name[i] for i in classes]
+    class_names = [flower_to_name[i] for i in classes]
 
     # Plot the probabilities for the top 5 classes as a bar graph
     plt.subplot(2,1,2)
 
-    sb.barplot(x=probabilities, y=flower_names, color=sb.color_palette()[0]);
+    sb.barplot(x=probabilities, y=class_names, color=sb.color_palette()[0]);
 
     plt.show()

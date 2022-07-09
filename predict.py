@@ -29,7 +29,7 @@ parser.add_argument('--gpu', type = str, default = 'cuda', help = 'GPU or CPU')
 arguments = parser.parse_args()
 
 # Load in a mapping from category label to category name
-class_to_name_dict = processing_functions.load_json(arguments.json)
+class_to_name_dict = processing_functions.load_json('classes_dictonary.json')
 
 # Load pretrained network
 model = model_functions.load_checkpoint(arguments.checkpoint)
@@ -50,4 +50,4 @@ print(probabilities)
 print(classes)
 
 # Display the image along with the top 5 classes
-processing_functions.display_image(arguments.image_dir, class_to_name_dict, classes, checkpoint['hidden_layer_units'])
+processing_functions.display_image(arguments.image_dir, class_to_name_dict, classes, checkpoint['hidden_layer_units'], probabilities)
