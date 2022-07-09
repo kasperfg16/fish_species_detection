@@ -30,7 +30,7 @@ arguments = parser.parse_args()
 # Image data directories
 img_folder_path = 'images'
 
-data_dir = ef.make_data_sets(img_folder_path)
+data_dir, num_classes = ef.make_data_sets(img_folder_path)
 
 # Divide images into train, test, and validation folders:
 train_dir = data_dir + '/train'
@@ -66,7 +66,7 @@ for parameter in model.parameters():
 classifier = nn.Sequential(OrderedDict([('fc1', nn.Linear(input_size, arguments.hidden_units)),
                                         ('relu', nn.ReLU()),
                                         ('drop', nn.Dropout(p=0.5)),
-                                        ('fc2', nn.Linear(arguments.hidden_units, 102)),
+                                        ('fc2', nn.Linear(arguments.hidden_units, num_classes)),
                                         ('output', nn.LogSoftmax(dim=1))]))
 
 model.classifier = classifier
