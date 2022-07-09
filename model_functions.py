@@ -162,8 +162,9 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
 def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
-    
-    model.to(gpu)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(device)
+    model.to(device)
     
     image = processing_functions.process_image(image_path, hidden_size)
     
@@ -178,7 +179,7 @@ def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
     probabilities = torch.exp(output)
     
     # Probabilities and the indices of those probabilities corresponding to the classes
-    top_probabilities, top_indices = probabilities.topk(topk)
+    top_probabilities, top_indices = probabilities.topk(5)
     
     # Convert to lists
     top_probabilities = top_probabilities.detach().type(torch.FloatTensor).numpy().tolist()[0] 
@@ -188,7 +189,7 @@ def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
     # Invert the dictionary so you get a mapping from index to class.
     
     idx_to_class = {value: key for key, value in model.class_to_idx.items()}
-    #print(idx_to_class)
+    print(idx_to_class)
     
     top_classes = [idx_to_class[index] for index in top_indices]
     
