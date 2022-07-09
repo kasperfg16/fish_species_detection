@@ -134,6 +134,12 @@ def display_image(image_dir, class_to_name_dict, classes, hidden_size, probabili
     # Plot the probabilities for the top 5 classes as a bar graph
     plt.subplot(2,1,2)
 
-    sb.barplot(x=probabilities, y=class_names, color=sb.color_palette()[0]);
+    print(probabilities)
+    print(class_names)
+
+    plt.bar(class_names, probabilities)
+    plt.xlabel("class names")
+    plt.ylabel("Probability")
+    plt.title("Prediction of class")
 
     plt.show()
