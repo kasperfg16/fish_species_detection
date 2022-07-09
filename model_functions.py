@@ -179,18 +179,19 @@ def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
     probabilities = torch.exp(output)
     
     # Probabilities and the indices of those probabilities corresponding to the classes
-    top_probabilities, top_indices = probabilities.topk(5)
+    top_probabilities, top_indices = probabilities.topk(2)
     
     # Convert to lists
     top_probabilities = top_probabilities.detach().type(torch.FloatTensor).numpy().tolist()[0] 
     top_indices = top_indices.detach().type(torch.FloatTensor).numpy().tolist()[0] 
-    
+    print(top_indices)
+
     # Convert topk_indices to the actual class labels using class_to_idx
     # Invert the dictionary so you get a mapping from index to class.
     
     idx_to_class = {value: key for key, value in model.class_to_idx.items()}
-    #print(idx_to_class)
+    print(idx_to_class)
     
-    top_classes = [idx_to_class[index] for index in idx_to_class]
+    top_classes = [idx_to_class[index] for index in top_indices]
     
     return top_probabilities, top_classes 
