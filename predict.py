@@ -50,4 +50,4 @@ print(probabilities)
 print(classes)
 
 # Display the image along with the top 5 classes
-processing_functions.display_image(arguments.image_dir, class_to_name_dict, classes)
+processing_functions.display_image(arguments.image_dir, class_to_name_dict, classes, checkpoint['hidden_layer_units'])
