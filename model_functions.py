@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
+import os, os.path
 
 import torch
 from torch import nn
@@ -50,10 +51,14 @@ def load_checkpoint(filepath):
     
     model.class_to_idx = checkpoint['class_to_idx']
 
+    subfolders = next(os.walk(img_folder_path))[1]
+
+    num_classes = len(subfolders)
+
     classifier = nn.Sequential(OrderedDict([('fc1', nn.Linear(checkpoint['clf_input'], checkpoint['hidden_layer_units'])),
                                         ('relu', nn.ReLU()),
                                         ('drop', nn.Dropout(p=0.5)),
-                                        ('fc2', nn.Linear(checkpoint['hidden_layer_units'], 102)),
+                                        ('fc2', nn.Linear(checkpoint['hidden_layer_units'], num_classes)),
                                         ('output', nn.LogSoftmax(dim=1))]))
 
     model.classifier = classifier
