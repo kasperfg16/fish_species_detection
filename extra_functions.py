@@ -20,6 +20,9 @@ def make_data_sets(img_folder_path, percent_train=80):
     # Find subfolders in /images
     subfolders = next(os.walk(img_folder_path))[1]
 
+    print("Number of classes: ", num_classes)
+    num_classes = len(subfolders)
+
     check = False
 
     # For each subfolder, devide into train and test with given percentage.
@@ -85,4 +88,4 @@ def make_data_sets(img_folder_path, percent_train=80):
     destination_dir = os.path.join(data_dir, folder_name)
     shutil.copytree(source_dir, destination_dir)
 
-    return data_dir
+    return data_dir, num_classes
