@@ -1,6 +1,9 @@
 # Fish_species_detection
 Repo for fish species detection project at Aalborg University
 
+## This project is best used with
+https://colab.research.google.com/drive/1qksJvIxpnAULe_8XfI04jG13a-3klOKA?usp=sharing
+
 ## Setup
 
 1. Open a terminal
