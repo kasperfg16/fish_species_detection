@@ -121,8 +121,8 @@ def display_image(image_dir, class_to_name_dict, classes, hidden_size, probabili
     plot_1 = plt.subplot(2,1,1)
 
     image = process_image(image_dir, hidden_size)
-
-    image = plt.imread(image)
+    
+    image = plt.imread(image_dir)
     
     key = image_dir.split('/')[-2]
 
