@@ -122,14 +122,12 @@ def display_image(image_dir, class_to_name_dict, classes, hidden_size, probabili
 
     image = process_image(image_dir, hidden_size)
     
-    image = plt.imread(image_dir)
-    
     key = image_dir.split('/')[-2]
 
     class_title = class_to_name_dict[key]
 
     imshow(image, plot_1, title=class_title);
-
+    
     # Convert from the class integer encoding to actual flower names
     class_names = [class_to_name_dict[i] for i in classes]
 
