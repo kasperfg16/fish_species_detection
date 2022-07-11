@@ -44,7 +44,7 @@ image = processing_functions.process_image(arguments.image_dir, checkpoint['hidd
 processing_functions.imshow(image)
 
 # Highest k probabilities and the indices of those probabilities corresponding to the classes (converted to the actual class labels)
-probabilities, classes = model_functions.predict(arguments.image_dir, model, 5, arguments.gpu, checkpoint['hidden_layer_units'])  
+probabilities, classes = model_functions.predict(arguments.image_dir, model, checkpoint['hidden_layer_units'], arguments.gpu, topk=5)  
 
 print(probabilities)
 print(classes)

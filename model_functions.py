@@ -196,8 +196,8 @@ def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
 
     # Get the number of classes
     classes = data.keys()
-    print("number of classes in JSON", classes)
     num_classes = len(classes)
+    num_classes = int(num_classes)
     f.close()
 
     if num_classes > topk:
