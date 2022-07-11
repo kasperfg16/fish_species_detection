@@ -1,3 +1,4 @@
+from json import JSONEncoder
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -184,8 +185,26 @@ def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
     
     probabilities = torch.exp(output)
     
+    json_path = "classes_dictonary.json"
+    # Opening JSON file
+
+    f = open(json_path)
+    
+    # returns JSON object as 
+    # a dictionary
+    data = JSONEncoder.load(f)
+
+    # Get the number of classes
+    classes = data.keys()
+    print("number of classes in JSON", classes)
+    num_classes = len(classes)
+    f.close()
+
+    if num_classes > topk:
+        num_classes = topk
+
     # Probabilities and the indices of those probabilities corresponding to the classes
-    top_probabilities, top_indices = probabilities.topk(2)
+    top_probabilities, top_indices = probabilities.topk(num_classes)
     
     # Convert to lists
     top_probabilities = top_probabilities.detach().type(torch.FloatTensor).numpy().tolist()[0] 
