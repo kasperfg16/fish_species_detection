@@ -1,4 +1,4 @@
-from json import JSONEncoder
+import json
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -192,7 +192,7 @@ def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
     
     # returns JSON object as 
     # a dictionary
-    data = JSONEncoder.load(f)
+    data = json.load(f)
 
     # Get the number of classes
     classes = data.keys()
