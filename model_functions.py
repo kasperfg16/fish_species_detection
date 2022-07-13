@@ -124,7 +124,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
 
         epochs = arg_epochs
         steps = 0
-        print_every = 40
+        print_every = 3
 
         model.to(gpu)
 

@@ -24,13 +24,14 @@ parser.add_argument('--hidden_units', type = int, default = 10000, help = 'Neuro
 parser.add_argument('--epochs', type = int, default = 20, help = 'Epochs')
 parser.add_argument('--gpu', type = str, default = 'cuda', help = 'GPU or CPU')
 parser.add_argument('--save_dir', type = str, default = 'checkpoint.pth', help = 'Path to checkpoint')
+parser.add_argument('--percent_train', type = str, default = 90, help = 'How much of the data set should be used for training (How much is used for testing = 100% - percent_train)')
 
 arguments = parser.parse_args()
 
 # Image data directories
 img_folder_path = 'images'
 
-data_dir, num_classes = ef.make_data_sets(img_folder_path)
+data_dir, num_classes = ef.make_data_sets(img_folder_path, percent_train=90)
 
 # Divide images into train, test, and validation folders:
 train_dir = data_dir + '/train'
