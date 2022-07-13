@@ -1,6 +1,7 @@
 import os, os.path, shutil
 import shutil
 import json
+import random
 
 def make_data_sets(img_folder_path, percent_train=80):
     '''
@@ -31,6 +32,9 @@ def make_data_sets(img_folder_path, percent_train=80):
         imgs_subfolder_path = img_folder_path + subfolder
         abs_path = os.path.abspath(imgs_subfolder_path)
         images = os.listdir(abs_path)
+
+        # Shuffle list of images
+        images = random.shuffle(images)
 
         num_images = len(images)
 
