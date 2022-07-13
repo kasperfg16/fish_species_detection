@@ -20,7 +20,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Image Classifier Predictions')
 
 # Command line arguments
-parser.add_argument('--image_dir', type = str, default = "validation_images\cod\GOPR1931.JPG", help = 'Path to image')
+parser.add_argument('--image_dir', type = str, default = "validation_images/cod/GOPR1931.JPG", help = 'Path to image')
 parser.add_argument('--checkpoint', type = str, default = 'checkpoint.pth', help = 'Path to checkpoint')
 parser.add_argument('--topk', type = int, default = 5, help = 'Top k classes and probabilities')
 parser.add_argument('--json', type = str, default = 'classes_dictonary.json', help = 'class_to_name json file')
