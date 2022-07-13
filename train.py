@@ -31,7 +31,7 @@ arguments = parser.parse_args()
 # Image data directories
 img_folder_path = 'images'
 
-data_dir, num_classes = ef.make_data_sets(img_folder_path, percent_train=90)
+data_dir, num_classes = ef.make_data_sets(img_folder_path, arguments.percent_train)
 
 # Divide images into train, test, and validation folders:
 train_dir = data_dir + '/train'
