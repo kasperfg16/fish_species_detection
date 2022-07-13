@@ -33,8 +33,12 @@ def make_data_sets(img_folder_path, percent_train=80):
         abs_path = os.path.abspath(imgs_subfolder_path)
         images = os.listdir(abs_path)
 
+        print("ting 1:", images)
+
         # Shuffle list of images
-        images = random.shuffle(images)
+        random.shuffle(images)
+
+        print("ting 2:", images)
 
         num_images = len(images)
 
