@@ -161,7 +161,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                           "Training Loss: {:.3f}.. ".format(running_loss/print_every),
                           "Validation Loss: {:.3f}.. ".format(validation_loss/len(validate_loader)),
                           "Validation Accuracy: {:.3f}".format(accuracy/len(validate_loader)))
-            
+
                     running_loss = 0
                     model.train()      
                     
