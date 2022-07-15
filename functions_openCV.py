@@ -187,45 +187,44 @@ def resizeImg(img, scale_percent):
     return resized
 
 
-def segment_codOPENCV(images, show_images=False):
+def segment_OPENCV(image, show_images=False, lower_hsv=(100, 21, 65), upper_hsv=(180, 255, 255)):
     print("Started segmenting the cod!")
 
     inRangeImages = []
     segmentedImages = []
 
-    for n in images:
-        hsv_img = copy.copy(n)
-        hsv_img = cv2.cvtColor(hsv_img, cv2.COLOR_BGR2HSV)
+    hsv_img = copy.copy(image)
+    hsv_img = cv2.cvtColor(hsv_img, cv2.COLOR_BGR2HSV)
 
-        # Create threshold for segmenting cod
-        mask = cv2.inRange(hsv_img, (100, 21, 65), (180, 255, 255))
+    # Create threshold for segmenting cod
+    mask = cv2.inRange(hsv_img, lower_hsv, upper_hsv)
 
-        # Invert the mask
-        mask = (255 - mask)
+    # Invert the mask
+    mask = (255 - mask)
 
-        # Create kernels for morphology
-        # kernelOpen = np.ones((4, 4), np.uint8)
-        # kernelClose = np.ones((7, 7), np.uint8)
+    # Create kernels for morphology
+    # kernelOpen = np.ones((4, 4), np.uint8)
+    # kernelClose = np.ones((7, 7), np.uint8)
 
-        kernelOpen = np.ones((3, 3), np.uint8)
-        kernelClose = np.ones((5, 5), np.uint8)
+    kernelOpen = np.ones((3, 3), np.uint8)
+    kernelClose = np.ones((5, 5), np.uint8)
 
-        # Perform morphology
-        open1 = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernelOpen, iterations=3)
-        close2 = cv2.morphologyEx(open1, cv2.MORPH_CLOSE, kernelClose, iterations=5)
+    # Perform morphology
+    open1 = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernelOpen, iterations=3)
+    close2 = cv2.morphologyEx(open1, cv2.MORPH_CLOSE, kernelClose, iterations=5)
 
-        segmented_cods = cv2.bitwise_and(n, n, mask=close2)
+    segmented_cods = cv2.bitwise_and(image, image, mask=close2)
 
-        segmented_cods[close2 == 0] = (255, 255, 255)
+    segmented_cods[close2 == 0] = (255, 255, 255)
 
-        if show_images:
-            cv2.imshow("res", segmented_cods)
-            cv2.imshow("mask", mask)
-            cv2.waitKey(0)
+    if show_images:
+        cv2.imshow("res", segmented_cods)
+        cv2.imshow("mask", mask)
+        cv2.waitKey(0)
 
-        # add to lists
-        inRangeImages.append(mask)
-        segmentedImages.append(segmented_cods)
+    # add to lists
+    inRangeImages.append(mask)
+    segmentedImages.append(segmented_cods)
 
     print("Finished segmenting the cod!")
 
