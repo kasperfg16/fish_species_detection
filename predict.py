@@ -15,39 +15,44 @@ import model_functions
 import processing_functions
 
 import json
-import argparse
 
-parser = argparse.ArgumentParser(description='Image Classifier Predictions')
+def load_predition_model(checkpoint):
+    # Load in a mapping from category label to category name
+    class_to_name_dict = processing_functions.load_json('classes_dictonary.json')
 
-# Command line arguments
-parser.add_argument('--image_dir', type = str, default = "validation_images/cod/GOPR1931.JPG", help = 'Path to image')
-parser.add_argument('--checkpoint', type = str, default = 'checkpoint.pth', help = 'Path to checkpoint')
-parser.add_argument('--topk', type = int, default = 5, help = 'Top k classes and probabilities')
-parser.add_argument('--json', type = str, default = 'classes_dictonary.json', help = 'class_to_name json file')
-parser.add_argument('--gpu', type = str, default = 'cuda', help = 'GPU or CPU')
+    if torch.cuda.is_available():
+        map_location = torch.device('cuda')
+        device = 'cuda'
 
-arguments = parser.parse_args()
+    else:
+        map_location = torch.device('cpu')
+        device = 'cpu'
+    
+    # Load pretrained network
+    model = model_functions.load_checkpoint(checkpoint, map_location)
 
-# Load in a mapping from category label to category name
-class_to_name_dict = processing_functions.load_json('classes_dictonary.json')
+    checkpoint = torch.load(checkpoint, map_location=map_location)
 
-# Load pretrained network
-model = model_functions.load_checkpoint(arguments.checkpoint)
-print(model)  
+    return checkpoint, model, class_to_name_dict, device
 
-checkpoint = torch.load(arguments.checkpoint)
 
-# Scales, crops, and normalizes a PIL image for the PyTorch model; returns a Numpy array
-image = processing_functions.process_image(arguments.image_dir, checkpoint['hidden_layer_units'])
+def predict_species(image_dir, topk, checkpoint, model, class_to_name_dict, device):
 
-# Display image
-processing_functions.imshow(image)
+    # Scales, crops, and normalizes a PIL image for the PyTorch model; returns a Numpy array
+    image = processing_functions.process_image(image_dir, checkpoint['hidden_layer_units'])
 
-# Highest k probabilities and the indices of those probabilities corresponding to the classes (converted to the actual class labels)
-probabilities, classes = model_functions.predict(arguments.image_dir, model, checkpoint['hidden_layer_units'], topk=arguments.topk, gpu=arguments.gpu)  
+    # Display image
+    processing_functions.imshow(image)
 
-print(probabilities)
-print(classes)
+    # Highest k probabilities and the indices of those probabilities corresponding to the classes (converted to the actual class labels)
+    probabilities, classes = model_functions.predict(image_dir, model, checkpoint['hidden_layer_units'], device, topk=topk)  
 
-# Display the image along with the top 5 classes
-processing_functions.display_image(arguments.image_dir, class_to_name_dict, classes, checkpoint['hidden_layer_units'], probabilities)
+    print(probabilities)
+    print(classes)
+
+    # Display the image along with the top 5 classes
+    processing_functions.display_image(image_dir, class_to_name_dict, classes, checkpoint['hidden_layer_units'], probabilities)
+    
+    prediction = classes[0]
+
+    return prediction

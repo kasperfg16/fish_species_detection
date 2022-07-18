@@ -35,9 +35,9 @@ def save_checkpoint(model, training_dataset, arch, epochs, lr, hidden_units, inp
     torch.save(checkpoint, 'checkpoint.pth')
     
 # Function for loading the model checkpoint    
-def load_checkpoint(filepath):
+def load_checkpoint(filepath, map_location):
     
-    checkpoint = torch.load(filepath)
+    checkpoint = torch.load(filepath, map_location=map_location)
     
     if checkpoint['model_name'] == 'vgg':
         model = models.vgg16(pretrained=True)
@@ -166,17 +166,20 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                     model.train()      
                     
                     
-def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
+def predict(image_path, model, hidden_size, device, topk=5):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print("device: ", device)
-    model.to(device)
-    
+
     image = processing_functions.process_image(image_path, hidden_size)
     
-    # Convert image to PyTorch tensor first
-    image = torch.from_numpy(image).type(torch.cuda.FloatTensor)
+    # Convert image to PyTorch tensor
+    if device == 'cuda':
+        image = torch.from_numpy(image).type(torch.cuda.FloatTensor)
+    else:
+        image = torch.from_numpy(image).type(torch.FloatTensor)
+
+    print("Device used for classification: ", device)
+    model.to(device)
     
     # Returns a new tensor with a dimension of size one inserted at the specified position.
     image = image.unsqueeze(0)
@@ -209,14 +212,12 @@ def predict(image_path, model, hidden_size, topk=5, gpu='cuda'):
     # Convert to lists
     top_probabilities = top_probabilities.detach().type(torch.FloatTensor).numpy().tolist()[0] 
     top_indices = top_indices.detach().type(torch.FloatTensor).numpy().tolist()[0] 
-    print(top_indices)
 
     # Convert topk_indices to the actual class labels using class_to_idx
     # Invert the dictionary so you get a mapping from index to class.
     
     idx_to_class = {value: key for key, value in model.class_to_idx.items()}
-    print(idx_to_class)
     
     top_classes = [idx_to_class[index] for index in top_indices]
     
-    return top_probabilities, top_classes 
+    return top_probabilities, top_classes

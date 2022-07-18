@@ -188,10 +188,6 @@ def resizeImg(img, scale_percent):
 
 
 def segment_OPENCV(image, show_images=False, lower_hsv=(100, 21, 65), upper_hsv=(180, 255, 255)):
-    print("Started segmenting the cod!")
-
-    inRangeImages = []
-    segmentedImages = []
 
     hsv_img = copy.copy(image)
     hsv_img = cv2.cvtColor(hsv_img, cv2.COLOR_BGR2HSV)
@@ -222,13 +218,7 @@ def segment_OPENCV(image, show_images=False, lower_hsv=(100, 21, 65), upper_hsv=
         cv2.imshow("mask", mask)
         cv2.waitKey(0)
 
-    # add to lists
-    inRangeImages.append(mask)
-    segmentedImages.append(segmented_cods)
-
-    print("Finished segmenting the cod!")
-
-    return inRangeImages, segmentedImages
+    return mask, segmented_cods
 
 
 def showSteps(stepsList, CLAHE=False):
