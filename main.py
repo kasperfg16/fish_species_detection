@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser(description='Image Classifier Predictions')
 
 # Command line arguments
 parser.add_argument('--image_dir', type = str, default = "./images/other/GOPR0010.JPG", help = 'Path to image')
-parser.add_argument('--checkpoint', type = str, default = 'C:/Users/Kaspe/OneDrive/Onenote/GitHub/fish_species_detection/checkpoint.pth', help = 'Path to checkpoint')
+parser.add_argument('--checkpoint', type = str, default = './checkpoint.pth', help = 'Path to checkpoint')
 parser.add_argument('--topk', type = int, default = 5, help = 'Top k classes and probabilities')
 parser.add_argument('--json', type = str, default = 'classes_dictonary.json', help = 'class_to_name json file')
 parser.add_argument('--gpu', type = str, default = 'cuda', help = 'GPU or CPU')
