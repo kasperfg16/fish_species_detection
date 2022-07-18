@@ -65,12 +65,11 @@ while run:
 
     # Measure length of sea creature
 
-    ## Segment sea creature
-    mask_cod, segmented_images = ftc.segment_OPENCV(img)
+    ## Undistort image - Benjamin: Her undistorter vi billedet
 
-    ## Undistort image
-    
-    
+    ## Segment sea creature - Benjamin: Her skal du lave din segmentering
+    # segmented_image =
+
     ## Use AruCo markers for size estimation
 
     ### Load ArUco detector and calibrate object size estimation (only needed once at startup)
@@ -95,11 +94,20 @@ while run:
 
             print("Camera setup calibrated")
             init_cali = False
-    
+
+    # Find contours
     imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # - Benjamin: Du skal have gjort sådan at den tager din segmentering isteddet for
+    # og tager den midterste contour, eller hvad du nu fik lavet
+    #imgray = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2GRAY)
+
     ret, thresh = cv2.threshold(imgray, 80, 255, 0)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     biggest_cnt = max(contours, key = cv2.contourArea)
+
+    # - Benjamin: Skift ud med din contour
+    # rect = cv2.minAreaRect(<BENJAMINS CONTOUR>)
 
     rect = cv2.minAreaRect(biggest_cnt)
     (x,y), (w,h), angle = rect
