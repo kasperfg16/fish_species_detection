@@ -36,6 +36,10 @@ https://colab.research.google.com/drive/1qksJvIxpnAULe_8XfI04jG13a-3klOKA?usp=sh
     pip install pandas
     ```
 
+2. Load the pre-trained model:
+
+<https://aaudk.sharepoint.com/:u:/r/sites/Fiskeprojekt/Delte%20dokumenter/General/checkpoints/checkpoint.pth?csf=1&web=1&e=qJ2OYD>
+
 ## Inspiration
 
 1. loading of images:
