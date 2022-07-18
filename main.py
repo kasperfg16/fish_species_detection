@@ -28,7 +28,7 @@ parser.add_argument('--checkpoint', type = str, default = './checkpoint.pth', he
 parser.add_argument('--topk', type = int, default = 5, help = 'Top k classes and probabilities')
 parser.add_argument('--json', type = str, default = 'classes_dictonary.json', help = 'class_to_name json file')
 parser.add_argument('--gpu', type = str, default = 'cuda', help = 'GPU or CPU')
-parser.add_argument('--arUco_marker_cur', type = float, default = 19.2, help = 'ArUco marker circumference')
+parser.add_argument('--arUco_marker_cur', type = float, default = 19.2, help = 'ArUco marker circumference in cm')
 
 arguments = parser.parse_args()
 
