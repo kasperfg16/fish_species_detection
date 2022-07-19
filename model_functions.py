@@ -26,7 +26,7 @@ def save_checkpoint(model, training_dataset, arch, epochs, lr, hidden_units, inp
     torch.save(checkpoint, 'checkpoint.pth')
     
 # Function for loading the model checkpoint    
-def load_checkpoint(filepath, map_location):
+def load_checkpoint(filepath, map_location, image_dir):
     
     checkpoint = torch.load(filepath, map_location=map_location)
     
@@ -43,8 +43,7 @@ def load_checkpoint(filepath, map_location):
     
     model.class_to_idx = checkpoint['class_to_idx']
 
-    img_folder_path = "images/"
-    subfolders = next(os.walk(img_folder_path))[1]
+    subfolders = next(os.walk(image_dir))[1]
 
     num_classes = len(subfolders)
 

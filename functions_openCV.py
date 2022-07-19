@@ -353,33 +353,40 @@ def loadImages(path, edit_images=False, show_img=False, scaling_percentage=30):
 
     images = []
     class_names = []
-    img_list = os.listdir(path)
-    print("Loading in images...")
-    print("Total images found:", len(img_list))
-    for cl in img_list:
-        # Find all the images in the file and save them in a list without the ".jpg"
-        cur_img = cv2.imread(f"{path}/{cl}", 1)
-        img_name = os.path.splitext(cl)[0]
 
-        # Do some quick images processing to get better pictures if the user wants to
-        if edit_images:
-            cur_img_re = resizeImg(cur_img, scaling_percentage)
-            cur_img = cur_img_re
+    # Find subfolders in /images
+    subfolders = next(os.walk(path))[1]
 
-        # Show the image before we append it, to make sure it is read correctly
-        if show_img:
-            cv2.imshow(f"Loaded image: {img_name}", cur_img)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+    for subfolder in subfolders:
+        imgs_subfolder_path = path + subfolder
+        abs_path = os.path.abspath(imgs_subfolder_path)
+        img_list = os.listdir(abs_path)
+        print("Loading in images...")
+        print("Total images found:", len(img_list))
+        for cl in img_list:
+            # Find all the images in the file and save them in a list without the ".jpg"
+            cur_img = cv2.imread(f"{path}/{cl}", 1)
+            img_name = os.path.splitext(cl)[0]
 
-        # Append them into the list
-        images.append(cur_img)
-        class_names.append(img_name)
+            # Do some quick images processing to get better pictures if the user wants to
+            if edit_images:
+                cur_img_re = resizeImg(cur_img, scaling_percentage)
+                cur_img = cur_img_re
 
-    # Remove the image window after we have checked all the pictures
-    cv2.destroyAllWindows()
+            # Show the image before we append it, to make sure it is read correctly
+            if show_img:
+                cv2.imshow(f"Loaded image: {img_name}", cur_img)
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
 
-    print("Done loading the images!")
+            # Append them into the list
+            images.append(cur_img)
+            class_names.append(img_name)
+
+        # Remove the image window after we have checked all the pictures
+        cv2.destroyAllWindows()
+
+        print("Done loading the images!")
 
     return images, class_names
 

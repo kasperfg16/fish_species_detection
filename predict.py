@@ -2,7 +2,7 @@ import torch
 import model_functions
 import processing_functions
 
-def load_predition_model(checkpoint):
+def load_predition_model(checkpoint, image_dir):
     # Load in a mapping from category label to category name
     class_to_name_dict = processing_functions.load_json('classes_dictonary.json')
 
@@ -15,7 +15,7 @@ def load_predition_model(checkpoint):
         device = 'cpu'
     
     # Load pretrained network
-    model = model_functions.load_checkpoint(checkpoint, map_location)
+    model = model_functions.load_checkpoint(checkpoint, map_location, image_dir)
 
     checkpoint = torch.load(checkpoint, map_location=map_location)
 

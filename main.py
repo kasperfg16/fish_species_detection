@@ -280,9 +280,9 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Image Classifier Predictions')
 
     # Command line arguments
-    parser.add_argument('--image_dir', type=str, default="E:/fiskekasse/Camera_cal_fish/fish_pics/input_images", help='Absolute path to image')
+    parser.add_argument('--image_dir', type=str, default="./fish_pics/input_images", help='Absolute path to image')
     parser.add_argument('--checkpoint', type=str,
-                        default='E:/fiskekasse/Camera_cal_fish/checkpoint.pth',
+                        default='./checkpoint.pth',
                         help='Path to checkpoint')
     parser.add_argument('--topk', type=int, default=5, help='Top k classes and probabilities')
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
@@ -302,7 +302,7 @@ def load_predict_model(imgs, arguments):
     """
     # Load model (only needed once at startup)
     print("Loading model...")
-    checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint)
+    checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.image_dir)
     print("Model loaded")
 
     # Predict
@@ -379,10 +379,13 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
 
 def main(args=None):
 
+    # Load arguments
+    arguments = parse_arguments()
+
     global image_test_undis
 
     # Load all the images
-    images, img_list_fish = ftc.loadImages("fish_pics/input_images/cods/", edit_images=False, show_img=False)
+    images, img_list_fish = ftc.loadImages(arguments.image_dir, edit_images=False, show_img=False)
 
     # Do we want to calibrate before undistorting the image?
     if cali:
@@ -396,9 +399,6 @@ def main(args=None):
 
         # Isolate fish contours
         isolatedFish = isolate_fish(resized, img_list_fish, display=False)
-
-        # Load arguments
-        arguments = parse_arguments()
 
         # Load and predict using the model
         load_predict_model(isolatedFish, arguments)
