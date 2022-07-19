@@ -314,10 +314,10 @@ def load_predict_model(imgs, arguments):
     print("Model loaded")
 
     # Predict
-    prediction = predict.predict_species(imgs, arguments.topk, checkpoint, model, class_to_name_dict,
+    predictions = predict.predict_species(imgs, arguments.topk, checkpoint, model, class_to_name_dict,
                                          device)
 
-    return prediction
+    return predictions
 
 
 def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, prediction):
@@ -404,16 +404,16 @@ def main(args=None):
         resized = resize_img(dst, 20)
 
         # Isolate fish contours
-        isolatedFish = isolate_fish(resized, img_list_fish, display=False)
+        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
 
         # Load arguments
         arguments = parse_arguments()
 
         # Load and predict using the model
-        load_predict_model(resized, arguments)
+        # predictions = load_predict_model(resized, arguments)
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
-        load_ArUco_cali_objectsize_and_display(isolatedFish)
+        load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, prediction)
 
 
 if __name__ == '__main__':
