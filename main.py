@@ -433,6 +433,5 @@ def main(args=None):
         # ArUco marker calibration for size estimation, displays results of the calculated size
         load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, predictions)
 
-
 if __name__ == '__main__':
     main()
