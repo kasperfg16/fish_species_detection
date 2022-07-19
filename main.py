@@ -15,6 +15,7 @@ cali = False
 displayCorners = False
 init_cali = True
 init_load_model = True
+resizePercent = 20
 
 objpoints = []  # 3d point in real world space
 imgpoints = []  # 2d points in image plane.
@@ -72,16 +73,26 @@ def resize_img(imgs, scale_percent):
     :param scale_percent: The percent to scale the images by
     :return:
     """
+    # If the parsed img is a list of images, then handle them as such and return a list. If not, just return the resized
+    # image.
+    if type(imgs) == list:
+        resized_list = []
+        for n in imgs:
+            width = int(n.shape[1] * scale_percent / 100)
+            height = int(n.shape[0] * scale_percent / 100)
+            dim = (width, height)
+            resized = cv2.resize(n, dim, interpolation=cv2.INTER_AREA)
+            resized_list.append(resized)
 
-    resized_list = []
-    for n in imgs:
-        width = int(n.shape[1] * scale_percent / 100)
-        height = int(n.shape[0] * scale_percent / 100)
+        return resized_list
+
+    else:
+        width = int(imgs.shape[1] * scale_percent / 100)
+        height = int(imgs.shape[0] * scale_percent / 100)
         dim = (width, height)
-        resized = cv2.resize(n, dim, interpolation=cv2.INTER_AREA)
-        resized_list.append(resized)
+        resized = cv2.resize(imgs, dim, interpolation=cv2.INTER_AREA)
 
-    return resized_list
+        return resized
 
 
 def calibrate_camera():
@@ -286,7 +297,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Image Classifier Predictions')
 
     # Command line arguments
-    parser.add_argument('--image_dir', type=str, default="./fish_pics/input_images/cods", help='Absolute path to images')
+    parser.add_argument('--image_dir', type=str, default="./fish_pics/input_images/cods/", help='Absolute path to images')
     parser.add_argument('--checkpoint', type=str,
                         default='./checkpoint.pth',
                         help='Path to checkpoint')
@@ -333,6 +344,7 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
 
     # Load ArUco image for calibration
     aruco_marker_img = cv2.imread(os.path.abspath("arUco_in_box.JPG"))
+    aruco_marker_img = resize_img(aruco_marker_img, resizePercent)
 
     # Get parameters
     parameters = cv2.aruco.DetectorParameters_create()
@@ -375,12 +387,12 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
 
         cv2.polylines(n, [box], True, (255, 0, 0), 2)
 
-        cv2.putText(n, "Width {} cm".format(w_cm, 1), (int(x + 10), int(y - 50)), cv2.FONT_HERSHEY_PLAIN, 5,
+        cv2.putText(n, "Width {} cm".format(w_cm, 1), (int(x + 10), int(y - 50)), cv2.FONT_HERSHEY_PLAIN, 2,
                     (100, 200, 0), 5)
-        cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 10), int(y + 50)), cv2.FONT_HERSHEY_PLAIN, 5,
+        cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 10), int(y + 50)), cv2.FONT_HERSHEY_PLAIN, 2,
                     (100, 200, 0), 5)
-        #cv2.putText(n, "Species: {}".format(prediction, 1), (int(x + 10), int(y + 150)), cv2.FONT_HERSHEY_PLAIN, 5,
-        #            (100, 200, 0), 5)
+        cv2.putText(n, "Species: {}".format(prediction, 1), (int(x + 10), int(y + 150)), cv2.FONT_HERSHEY_PLAIN, 2,
+                    (100, 200, 0), 5)
 
         cv2.imshow("size", n)
         cv2.waitKey(0)
@@ -406,16 +418,16 @@ def main(args=None):
         dst = undistort_imgs(images)
 
         # Resize images for presentation
-        resized = resize_img(dst, 20)
+        resized = resize_img(dst, resizePercent)
 
         # Isolate fish contours
-        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=True)
+        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
 
         # Load and predict using the model
-        # predictions = load_predict_model(resized, arguments)
+        predictions = load_predict_model(resized, arguments)
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
-        #load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, "prediction")
+        load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, "predictions")
 
 
 if __name__ == '__main__':
