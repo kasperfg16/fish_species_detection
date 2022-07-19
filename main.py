@@ -395,7 +395,7 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
                     (100, 200, 0), 5)
         cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 10), int(y + 50)), cv2.FONT_HERSHEY_PLAIN, 2,
                     (100, 200, 0), 5)
-        cv2.putText(n, "Species: {}".format(prediction, 1), (int(x + 10), int(y + 150)), cv2.FONT_HERSHEY_PLAIN, 2,
+        cv2.putText(n, "Species: {}".format(prediction[count], 1), (int(x + 10), int(y + 150)), cv2.FONT_HERSHEY_PLAIN, 2,
                     (100, 200, 0), 5)
 
         cv2.imshow("size", n)
