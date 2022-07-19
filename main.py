@@ -286,7 +286,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Image Classifier Predictions')
 
     # Command line arguments
-    parser.add_argument('--image_dir', type=str, default="./fish_pics/input_images", help='Absolute path to image')
+    parser.add_argument('--image_dir', type=str, default="./fish_pics/input_images/cods", help='Absolute path to images')
     parser.add_argument('--checkpoint', type=str,
                         default='./checkpoint.pth',
                         help='Path to checkpoint')
@@ -379,8 +379,11 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
                     (100, 200, 0), 5)
         cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 10), int(y + 50)), cv2.FONT_HERSHEY_PLAIN, 5,
                     (100, 200, 0), 5)
-        cv2.putText(n, "Species: {}".format(prediction, 1), (int(x + 10), int(y + 150)), cv2.FONT_HERSHEY_PLAIN, 5,
-                    (100, 200, 0), 5)
+        #cv2.putText(n, "Species: {}".format(prediction, 1), (int(x + 10), int(y + 150)), cv2.FONT_HERSHEY_PLAIN, 5,
+        #            (100, 200, 0), 5)
+
+        cv2.imshow("size", n)
+        cv2.waitKey(0)
 
         count += 1
 
@@ -406,13 +409,13 @@ def main(args=None):
         resized = resize_img(dst, 20)
 
         # Isolate fish contours
-        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
+        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=True)
 
         # Load and predict using the model
         # predictions = load_predict_model(resized, arguments)
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
-        load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, prediction)
+        #load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, "prediction")
 
 
 if __name__ == '__main__':
