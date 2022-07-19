@@ -353,6 +353,7 @@ def loadImages(path, edit_images=False, show_img=False, scaling_percentage=30):
 
     images = []
     class_names = []
+    img_list_abs_path = []
     img_list = os.listdir(path)
     print("Loading in images...")
     print("Total images found:", len(img_list))
@@ -375,13 +376,14 @@ def loadImages(path, edit_images=False, show_img=False, scaling_percentage=30):
         # Append them into the list
         images.append(cur_img)
         class_names.append(img_name)
+        img_list_abs_path.append(path+cl)
 
     # Remove the image window after we have checked all the pictures
     cv2.destroyAllWindows()
 
     print("Done loading the images!")
 
-    return images, class_names
+    return images, class_names, img_list_abs_path
 
 
 def saveCDI(img_list_fish, percSpotCoverage):

@@ -160,6 +160,8 @@ def predict(image, model, hidden_size, device, topk=5):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
 
+    image = processing_functions.process_image(image, hidden_size)
+
     # Convert image to PyTorch tensor
     if device == 'cuda':
         image = torch.from_numpy(image).type(torch.cuda.FloatTensor)

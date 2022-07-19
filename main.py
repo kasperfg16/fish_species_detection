@@ -312,7 +312,7 @@ def parse_arguments():
     return arguments
 
 
-def load_predict_model(imgs, arguments):
+def load_predict_model(img_list, arguments):
     """
     Loads the prediction model for prediction.
 
@@ -325,7 +325,7 @@ def load_predict_model(imgs, arguments):
     print("Model loaded")
 
     # Predict
-    predictions = predict.predict_species(imgs, arguments.topk, checkpoint, model, class_to_name_dict,
+    predictions = predict.predict_species(img_list, arguments.topk, checkpoint, model, class_to_name_dict,
                                          device)
 
     return predictions
@@ -412,7 +412,7 @@ def main(args=None):
     global image_test_undis
 
     # Load all the images
-    images, img_list_fish = ftc.loadImages(arguments.image_dir_cods, edit_images=False, show_img=False)
+    images, img_list_fish, img_list_abs_path = ftc.loadImages(arguments.image_dir_cods, edit_images=False, show_img=False)
 
     # Do we want to calibrate before undistorting the image?
     if cali:
@@ -428,10 +428,10 @@ def main(args=None):
         isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
 
         # Load and predict using the model
-        predictions = load_predict_model(resized, arguments)
+        predictions = load_predict_model(img_list_abs_path, arguments)
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
-        load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, "predictions")
+        load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, predictions)
 
 
 if __name__ == '__main__':
