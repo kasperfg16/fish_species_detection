@@ -43,7 +43,7 @@ def load_checkpoint(filepath, map_location):
     
     model.class_to_idx = checkpoint['class_to_idx']
 
-    img_folder_path = "images/"
+    img_folder_path = "fish_pics/input_images"
     subfolders = next(os.walk(img_folder_path))[1]
 
     num_classes = len(subfolders)

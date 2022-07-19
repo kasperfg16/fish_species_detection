@@ -68,9 +68,10 @@ def load_images_from_folder(folder):
 def resize_img(imgs, scale_percent):
     """
     Resizes a list of images with a percentage.
+
     :param imgs: A list of images to resize
     :param scale_percent: The percent to scale the images by
-    :return:
+    :return: A list if resized images
     """
 
     resized_list = []
@@ -88,6 +89,7 @@ def calibrate_camera():
 
     """
     Calibrates a camera using checkerboard pattern (6x9)
+
     :return: Saves camera parameters in an YAML file
     """
 
@@ -137,6 +139,7 @@ def undistort_imgs(images, displayImages=False):
 
     """
     Undistorts images using mtx and dist derived from a YAML file.
+
     :param images: A list images to undistort
     :param displayImages: Display the undistorted images
     :return: A list of undistorted images
@@ -183,7 +186,8 @@ def get_contour_middle(cnt):
 
 def isolate_fish(imgs, img_list_fish, display=False):
     """
-    Isolates fish from a list of images
+    Isolates fish from a list of images.
+
     :param imgs: List of images of fish
     :param img_list_fish: ID of the fish
     :param display: Display each isolated image
@@ -217,12 +221,13 @@ def isolate_fish(imgs, img_list_fish, display=False):
         contMiddle = None
         closestConMiddle = 0
         biggestConList = []
+        copy = n.copy()
 
         # Get the middle of the image
-        (h, w) = n.shape[:2]
+        (h, w) = copy.shape[:2]
 
         # Create a new mask for each image
-        mask = np.zeros(n.shape[:2], dtype=n.dtype)
+        mask = np.zeros(copy.shape[:2], dtype=copy.dtype)
 
         # Find contours
         fishContours, __ = cv2.findContours(mask_cod_CLAHE[count], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -242,7 +247,7 @@ def isolate_fish(imgs, img_list_fish, display=False):
         for cont in biggestConList:
             contMiddle = get_contour_middle(cont)
             distance = distance_between_points((w//2, h//2), contMiddle)
-            cv2.line(n, contMiddle, (w // 2, h // 2), (0, 255, 0), thickness=2)
+            cv2.line(copy, contMiddle, (w // 2, h // 2), (0, 255, 0), thickness=2)
             if distance < distanceToMiddle:
                 distanceToMiddle = distance
                 closestCon = cont
@@ -253,9 +258,9 @@ def isolate_fish(imgs, img_list_fish, display=False):
         conlistReturn.append(closestCon)
 
         # Draw the contour and center of the shape on the image
-        cv2.drawContours(n, [closestCon], -1, (0, 255, 0), 2)
-        cv2.circle(n, closestConMiddle, 7, (255, 255, 255), -1)
-        cv2.circle(n, (w//2, h//2), 7, (255, 0, 255), -1)
+        cv2.drawContours(copy, [closestCon], -1, (0, 255, 0), 2)
+        cv2.circle(copy, closestConMiddle, 7, (255, 255, 255), -1)
+        cv2.circle(copy, (w//2, h//2), 7, (255, 0, 255), -1)
 
         # Draw contours and isolate the fish
         cv2.drawContours(mask, [closestCon], 0, 255, -1)
@@ -263,8 +268,9 @@ def isolate_fish(imgs, img_list_fish, display=False):
         isolated_fish.append(result)
 
         if display:
-            cv2.imshow("Isolated fish", mask)
-            cv2.imshow("Normal fish", n)
+            cv2.imshow("Isolated fish", result)
+            cv2.imshow("Normal fish - copy", copy)
+            cv2.imshow("Normal fish - original", n)
             cv2.waitKey(0)
 
         count = count + 1
@@ -275,6 +281,7 @@ def isolate_fish(imgs, img_list_fish, display=False):
 def parse_arguments():
     """
     Parses arguments for the program.
+
     :return: The arguments specified
     """
     parser = argparse.ArgumentParser(description='Image Classifier Predictions')
@@ -297,6 +304,7 @@ def parse_arguments():
 def load_predict_model(imgs, arguments):
     """
     Loads the prediction model for prediction.
+
     :param arguments: The arguments for the predict model
     :return: The predicted species
     """
@@ -316,6 +324,7 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
 
     """
     Uses an ArUco marker to calibrate and predict the fish size.
+
     :param prediction: The predicted species
     :param imgs: The list of images used for prediction
     :param fishContours: All the contours of the fish
@@ -401,7 +410,7 @@ def main(args=None):
         arguments = parse_arguments()
 
         # Load and predict using the model
-        load_predict_model(isolatedFish, arguments)
+        load_predict_model(resized, arguments)
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
         load_ArUco_cali_objectsize_and_display(isolatedFish)
