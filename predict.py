@@ -31,14 +31,14 @@ def predict_species(imgs, topk, checkpoint, model, class_to_name_dict, device):
     processing_functions.imshow(image)
 
     # Highest k probabilities and the indices of those probabilities corresponding to the classes (converted to the actual class labels)
-    probabilities, classes = model_functions.predict(image_dir, model, checkpoint['hidden_layer_units'], device, topk=topk)  
+    probabilities, classes = model_functions.predict(image_dir, model, checkpoint['hidden_layer_units'], device, topk=topk)
 
     print(probabilities)
     print(classes)
 
     # Display the image along with the top 5 classes
     processing_functions.display_image(image_dir, class_to_name_dict, classes, checkpoint['hidden_layer_units'], probabilities)
-    
+
     prediction = classes[0]
 
     return prediction
