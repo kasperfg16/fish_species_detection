@@ -79,7 +79,7 @@ def imshow(image, ax=None, title=None):
         fig, ax = plt.subplots()
     
     # PyTorch tensors assume the color channel is the first dimension
-    # but matplotlib assumes it's the third dimension
+    # but matplotlib assumes is the third dimension
     image = image.transpose((1, 2, 0))
     
     # Undo preprocessing
