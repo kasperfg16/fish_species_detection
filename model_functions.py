@@ -156,58 +156,56 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                     model.train()      
                     
                     
-def predict(imgs, model, hidden_size, device, topk=5):
+def predict(image, model, hidden_size, device, topk=5):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
 
-    for n in imgs:
-        image = n
-        # Convert image to PyTorch tensor
-        if device == 'cuda':
-            image = torch.from_numpy(image).type(torch.cuda.FloatTensor)
-        else:
-            image = torch.from_numpy(image).type(torch.FloatTensor)
+    # Convert image to PyTorch tensor
+    if device == 'cuda':
+        image = torch.from_numpy(image).type(torch.cuda.FloatTensor)
+    else:
+        image = torch.from_numpy(image).type(torch.FloatTensor)
 
-        print("Device used for classification: ", device)
-        model.to(device)
+    print("Device used for classification: ", device)
+    model.to(device)
 
-        # Returns a new tensor with a dimension of size one inserted at the specified position.
-        image = image.unsqueeze(0)
+    # Returns a new tensor with a dimension of size one inserted at the specified position.
+    image = image.unsqueeze(0)
 
-        output = model.forward(image)
+    output = model.forward(image)
 
-        probabilities = torch.exp(output)
+    probabilities = torch.exp(output)
 
-        json_path = "classes_dictonary.json"
-        # Opening JSON file
+    json_path = "classes_dictonary.json"
+    # Opening JSON file
 
-        f = open(json_path)
+    f = open(json_path)
 
-        # returns JSON object as
-        # a dictionary
-        data = json.load(f)
+    # returns JSON object as
+    # a dictionary
+    data = json.load(f)
 
-        # Get the number of classes
-        classes = data.keys()
-        num_classes = len(classes)
-        num_classes = int(num_classes)
-        f.close()
+    # Get the number of classes
+    classes = data.keys()
+    num_classes = len(classes)
+    num_classes = int(num_classes)
+    f.close()
 
-        if num_classes > topk:
-            num_classes = topk
+    if num_classes > topk:
+        num_classes = topk
 
-        # Probabilities and the indices of those probabilities corresponding to the classes
-        top_probabilities, top_indices = probabilities.topk(num_classes)
+    # Probabilities and the indices of those probabilities corresponding to the classes
+    top_probabilities, top_indices = probabilities.topk(num_classes)
 
-        # Convert to lists
-        top_probabilities = top_probabilities.detach().type(torch.FloatTensor).numpy().tolist()[0]
-        top_indices = top_indices.detach().type(torch.FloatTensor).numpy().tolist()[0]
+    # Convert to lists
+    top_probabilities = top_probabilities.detach().type(torch.FloatTensor).numpy().tolist()[0]
+    top_indices = top_indices.detach().type(torch.FloatTensor).numpy().tolist()[0]
 
-        # Convert topk_indices to the actual class labels using class_to_idx
-        # Invert the dictionary so you get a mapping from index to class.
+    # Convert topk_indices to the actual class labels using class_to_idx
+    # Invert the dictionary so you get a mapping from index to class.
 
-        idx_to_class = {value: key for key, value in model.class_to_idx.items()}
+    idx_to_class = {value: key for key, value in model.class_to_idx.items()}
 
-        top_classes = [idx_to_class[index] for index in top_indices]
+    top_classes = [idx_to_class[index] for index in top_indices]
     
     return top_probabilities, top_classes

@@ -297,7 +297,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Image Classifier Predictions')
 
     # Command line arguments
-    parser.add_argument('--image_dir', type=str, default="./fish_pics/input_images/cods/", help='Absolute path to images')
+    parser.add_argument('--image_dir', type=str, default="./fish_pics/input_images/", help='Absolute path to images')
+    parser.add_argument('--image_dir_cods', type=str, default="./fish_pics/input_images/cods/", help='Absolute path to images')
     parser.add_argument('--checkpoint', type=str,
                         default='./checkpoint.pth',
                         help='Path to checkpoint')
@@ -411,7 +412,7 @@ def main(args=None):
     global image_test_undis
 
     # Load all the images
-    images, img_list_fish = ftc.loadImages(arguments.image_dir, edit_images=False, show_img=False)
+    images, img_list_fish = ftc.loadImages(arguments.image_dir_cods, edit_images=False, show_img=False)
 
     # Do we want to calibrate before undistorting the image?
     if cali:
@@ -427,7 +428,7 @@ def main(args=None):
         isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
 
         # Load and predict using the model
-        # predictions = load_predict_model(resized, arguments)
+        predictions = load_predict_model(resized, arguments)
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
         load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, "predictions")

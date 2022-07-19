@@ -28,6 +28,7 @@ def predict_species(imgs, topk, checkpoint, model, class_to_name_dict, device):
 
     # Display image
     predictions = []
+
     for n in imgs:
         processing_functions.imshow(n)
 
