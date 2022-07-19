@@ -344,6 +344,9 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
 
     # Load ArUco image for calibration
     aruco_marker_img = cv2.imread(os.path.abspath("arUco_in_box.JPG"))
+    list_aruco = [aruco_marker_img]
+    aruco_marker_img_undi_list = undistort_imgs(list_aruco)
+    aruco_marker_img = aruco_marker_img_undi_list[0]
     aruco_marker_img = resize_img(aruco_marker_img, resizePercent)
 
     # Get parameters
@@ -424,7 +427,7 @@ def main(args=None):
         isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
 
         # Load and predict using the model
-        predictions = load_predict_model(resized, arguments)
+        # predictions = load_predict_model(resized, arguments)
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
         load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, "predictions")

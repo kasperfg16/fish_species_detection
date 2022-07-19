@@ -22,23 +22,26 @@ def load_predition_model(checkpoint, image_dir):
     return checkpoint, model, class_to_name_dict, device
 
 
-def predict_species(image_dir, topk, checkpoint, model, class_to_name_dict, device):
+def predict_species(imgs, topk, checkpoint, model, class_to_name_dict, device):
 
     # Scales, crops, and normalizes a PIL image for the PyTorch model; returns a Numpy array
-    image = imgs
 
     # Display image
-    processing_functions.imshow(image_dir)
+    predictions = []
+    for n in imgs:
+        processing_functions.imshow(n)
 
-    # Highest k probabilities and the indices of those probabilities corresponding to the classes (converted to the actual class labels)
-    probabilities, classes = model_functions.predict(image_dir, model, checkpoint['hidden_layer_units'], device, topk=topk)
+        # Highest k probabilities and the indices of those probabilities corresponding to the classes (converted to the
+        # actual class labels)
+        probabilities, classes = model_functions.predict(n, model, checkpoint['hidden_layer_units'], device, topk=topk)
 
-    print(probabilities)
-    print(classes)
+        print(probabilities)
+        print(classes)
 
-    # Display the image along with the top 5 classes
-    processing_functions.display_image(image_dir, class_to_name_dict, classes, checkpoint['hidden_layer_units'], probabilities)
+        # Display the image along with the top 5 classes
+        processing_functions.display_image(n, class_to_name_dict, classes, checkpoint['hidden_layer_units'], probabilities)
 
-    prediction = classes[0]
+        prediction = classes[0]
+        predictions.append(prediction)
 
-    return prediction
+    return predictions
