@@ -1,18 +1,9 @@
 import json
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sb
 import os, os.path
-
 import torch
-from torch import nn
-from torch import optim
-import torch.nn.functional as F
-from torchvision import datasets, transforms, models
-
 import processing_functions
-
+from torch import nn
+from torchvision import models
 from collections import OrderedDict
 from workspace_utils import active_session
 
@@ -166,11 +157,11 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                     model.train()      
                     
                     
-def predict(image_path, model, hidden_size, device, topk=5):
+def predict(imgs, model, hidden_size, device, topk=5):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
 
-    image = processing_functions.process_image(image_path, hidden_size)
+    image = imgs
     
     # Convert image to PyTorch tensor
     if device == 'cuda':

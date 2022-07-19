@@ -1,20 +1,6 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sb
-
 import torch
-from torch import nn
-from torch import optim
-import torch.nn.functional as F
-from torchvision import datasets, transforms, models
-
-from collections import OrderedDict
-
 import model_functions
 import processing_functions
-
-import json
 
 def load_predition_model(checkpoint):
     # Load in a mapping from category label to category name
@@ -36,10 +22,10 @@ def load_predition_model(checkpoint):
     return checkpoint, model, class_to_name_dict, device
 
 
-def predict_species(image_dir, topk, checkpoint, model, class_to_name_dict, device):
+def predict_species(imgs, topk, checkpoint, model, class_to_name_dict, device):
 
     # Scales, crops, and normalizes a PIL image for the PyTorch model; returns a Numpy array
-    image = processing_functions.process_image(image_dir, checkpoint['hidden_layer_units'])
+    image = imgs
 
     # Display image
     processing_functions.imshow(image)

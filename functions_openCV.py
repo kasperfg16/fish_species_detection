@@ -9,7 +9,9 @@ from matplotlib import pyplot as plt
 def checkerboard_calibrateOPENCV(dimensions, images_distort, images_checkerboard, show_img=False, recalibrate=False):
     """
     Undistorts images by a checkerboard calibration.
+
     SRC: https://docs.opencv.org/master/dc/dbb/tutorial_py_calibration.html
+
     :param show_img: Debug to see if all the images are loaded and all the edges are found
     :param dimensions: The dimensions of the checkerboard from a YAML file
     :param images_distort: The images the needs to be undistorted
@@ -99,6 +101,7 @@ def checkerboard_calibrateOPENCV(dimensions, images_distort, images_checkerboard
 def detect_woundspotsOPENCV(imgs, maskCod):
     '''
     Detect bloodspots, mark and tag them and find the coverage of bloodspots on hte cod
+
     :param imgs: Images with cod
     :param maskCod: The mask showing only the cod area
     :return: mask of blood spots, segmented blood spots, marked and tagged blood spots, coverage of blood spots on the
@@ -173,6 +176,7 @@ def detect_woundspotsOPENCV(imgs, maskCod):
 def resizeImg(img, scale_percent):
     """
     Resizes the image by a scalar
+
     :param img: the image to resize
     :param scale_percent: The scaling percentage
     :return: the image scaled by the scalar
@@ -187,43 +191,55 @@ def resizeImg(img, scale_percent):
     return resized
 
 
-def segment_OPENCV(image, show_images=False, lower_hsv=(100, 21, 65), upper_hsv=(180, 255, 255)):
+def segment_codOPENCV(images, show_images=False):
+    print("Started segmenting the cod!")
 
-    hsv_img = copy.copy(image)
-    hsv_img = cv2.cvtColor(hsv_img, cv2.COLOR_BGR2HSV)
+    inRangeImages = []
+    segmentedImages = []
 
-    # Create threshold for segmenting cod
-    mask = cv2.inRange(hsv_img, lower_hsv, upper_hsv)
+    for n in images:
+        hsv_img = copy.copy(n)
+        hsv_img = cv2.cvtColor(hsv_img, cv2.COLOR_BGR2HSV)
 
-    # Invert the mask
-    mask = (255 - mask)
+        # Create threshold for segmenting cod
+        mask = cv2.inRange(hsv_img, (100, 21, 65), (180, 255, 255))
 
-    # Create kernels for morphology
-    # kernelOpen = np.ones((4, 4), np.uint8)
-    # kernelClose = np.ones((7, 7), np.uint8)
+        # Invert the mask
+        mask = (255 - mask)
 
-    kernelOpen = np.ones((3, 3), np.uint8)
-    kernelClose = np.ones((5, 5), np.uint8)
+        # Create kernels for morphology
+        # kernelOpen = np.ones((4, 4), np.uint8)
+        # kernelClose = np.ones((7, 7), np.uint8)
 
-    # Perform morphology
-    open1 = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernelOpen, iterations=3)
-    close2 = cv2.morphologyEx(open1, cv2.MORPH_CLOSE, kernelClose, iterations=5)
+        kernelOpen = np.ones((3, 3), np.uint8)
+        kernelClose = np.ones((5, 5), np.uint8)
 
-    segmented_cods = cv2.bitwise_and(image, image, mask=close2)
+        # Perform morphology
+        open1 = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernelOpen, iterations=3)
+        close2 = cv2.morphologyEx(open1, cv2.MORPH_CLOSE, kernelClose, iterations=5)
 
-    segmented_cods[close2 == 0] = (255, 255, 255)
+        segmented_cods = cv2.bitwise_and(n, n, mask=close2)
 
-    if show_images:
-        cv2.imshow("res", segmented_cods)
-        cv2.imshow("mask", mask)
-        cv2.waitKey(0)
+        segmented_cods[close2 == 0] = (255, 255, 255)
 
-    return mask, segmented_cods
+        if show_images:
+            cv2.imshow("res", segmented_cods)
+            cv2.imshow("mask", mask)
+            cv2.waitKey(0)
+
+        # add to lists
+        inRangeImages.append(mask)
+        segmentedImages.append(segmented_cods)
+
+    print("Finished segmenting the cod!")
+
+    return inRangeImages, segmentedImages
 
 
 def showSteps(stepsList, CLAHE=False):
     '''
     Create subplots showing main steps in algorithm
+
     :return: None
     '''
 
@@ -290,6 +306,7 @@ def showSteps(stepsList, CLAHE=False):
 def save_imgOPENCV(imgs, path, originPathNameList, img_tag=None):
     '''
     Saves a list of images in the folder that the path is set to.
+
     :param originPathName: The path of the original path of the images that have been manipulated.
     :param imgs: A list of images.
     :param path: The path that the images will be saved to.
@@ -311,6 +328,7 @@ def save_imgOPENCV(imgs, path, originPathNameList, img_tag=None):
 def crop(images, y, x, height, width):
     '''
     Crops images.
+
     :param images: The images to crop
     :return: Cropped images
     '''
@@ -329,6 +347,7 @@ def crop(images, y, x, height, width):
 def loadImages(path, edit_images=False, show_img=False, scaling_percentage=30):
     """
     Loads all the images inside a file.
+
     :return: All the images in a list and its file names.
     """
 
@@ -368,6 +387,7 @@ def loadImages(path, edit_images=False, show_img=False, scaling_percentage=30):
 def saveCDI(img_list_fish, percSpotCoverage):
     """
     Saves a CDI of each fish in a .txt file.
+
     :param img_list_fish: The names of each fish
     :param percSpotCoverage: The percentage the wound covers the surface area of one side of the fish
     :return:
@@ -462,4 +482,12 @@ def claheHSL(imgList, clipLimit, tileGridSize):
         fiskHLS2[:, :, 1] = claheLchannel1
         fiskClahe = cv2.cvtColor(fiskHLS2, cv2.COLOR_HLS2BGR)
         fiskClaheList.append(fiskClahe)
-    return 
+    return fiskClaheList
+
+
+def find_biggest_contour(imgs):
+    '''
+    Finds the biggest contour in an image.
+    :return: The biggest contour
+    '''
+

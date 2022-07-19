@@ -1,8 +1,6 @@
 import signal
-
-from contextlib import contextmanager
-
 import requests
+from contextlib import contextmanager
 
 
 DELAY = INTERVAL = 4 * 60  # interval time in seconds

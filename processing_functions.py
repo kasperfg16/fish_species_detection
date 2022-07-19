@@ -1,16 +1,9 @@
 import numpy as np
-import pandas as pd
+import json
 import matplotlib.pyplot as plt
 import seaborn as sb
-
 from PIL import Image
-import json
-
-import torch
-from torch import nn
-from torch import optim
-import torch.nn.functional as F
-from torchvision import datasets, transforms, models
+from torchvision import datasets, transforms
 
 # Define transforms for the training, validation, and testing sets
 def data_transforms():
