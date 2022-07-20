@@ -384,8 +384,9 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
         h_cm = round(h / pixel_cm_ratio, 2)
 
         # Because of some rotation issues doing width and height calculations, we need to change up the width and
-        # height to make sure the correct values are set for each variable. Since we know the fish will always have a
-        # greater width than height, we can simply do a check and then change up the variables if the check is true.
+        # height sometimes to make sure the correct values are set for each variable. Since we know the fish will always
+        # have a greater width than height, we can simply do a check and then change up the variables if the check is
+        # true.
         if h_cm > w_cm:
             h_cm, w_cm = w_cm, h_cm
 
