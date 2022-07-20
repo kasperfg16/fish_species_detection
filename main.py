@@ -383,6 +383,12 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
         w_cm = round(w / pixel_cm_ratio, 2)
         h_cm = round(h / pixel_cm_ratio, 2)
 
+        # Because of some rotation issues doing width and height calculations, we need to change up the width and
+        # height to make sure the correct values are set for each variable. Since we know the fish will always have a
+        # greater width than height, we can simply do a check and then change up the variables if the check is true.
+        if h_cm > w_cm:
+            h_cm, w_cm = w_cm, h_cm
+
         box = cv2.boxPoints(rect)
         box = np.int0(box)
 
@@ -391,12 +397,12 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
 
         cv2.polylines(n, [box], True, (255, 0, 0), 2)
 
-        cv2.putText(n, "Width {} cm".format(w_cm, 1), (int(x + 10), int(y - 50)), cv2.FONT_HERSHEY_PLAIN, 2,
-                    (100, 200, 0), 5)
-        cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 10), int(y + 50)), cv2.FONT_HERSHEY_PLAIN, 2,
-                    (100, 200, 0), 5)
-        cv2.putText(n, "Species: {}".format(prediction[count], 1), (int(x + 10), int(y + 150)), cv2.FONT_HERSHEY_PLAIN, 2,
-                    (100, 200, 0), 5)
+        cv2.putText(n, "Width {} cm".format(w_cm, 1), (int(x - 300), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 2,
+                    (100, 200, 0), 2)
+        cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 0), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 2,
+                    (100, 200, 0), 2)
+        cv2.putText(n, "Species: {}".format(prediction[count], 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 2,
+                    (100, 200, 0), 2)
 
         cv2.imshow("size", n)
         cv2.waitKey(0)
@@ -432,6 +438,7 @@ def main(args=None):
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
         load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, predictions)
+
 
 if __name__ == '__main__':
     main()
