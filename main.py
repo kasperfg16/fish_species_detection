@@ -344,11 +344,13 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
     """
 
     # Load ArUco image for calibration
-    aruco_marker_img = cv2.imread(os.path.abspath("arUco_in_box.JPG"))
+    aruco_marker_img = cv2.imread(os.path.abspath("arUco_in_box_2.JPG"))
     list_aruco = [aruco_marker_img]
     aruco_marker_img_undi_list = undistort_imgs(list_aruco)
     aruco_marker_img = aruco_marker_img_undi_list[0]
     aruco_marker_img = resize_img(aruco_marker_img, resizePercent)
+    cv2.imshow("aruco_marker_img", aruco_marker_img)
+    cv2.waitKey(0)
 
     # Get parameters
     parameters = cv2.aruco.DetectorParameters_create()
