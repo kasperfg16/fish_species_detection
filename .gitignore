@@ -147,5 +147,5 @@ Calibration/GOPR0398.JPG
 Calibration/GOPR0399.JPG
 checkpoint.pth
 
-fish_pics/
-fish_pics/output_images/
+fish_pics\
+fish_pics\output_images

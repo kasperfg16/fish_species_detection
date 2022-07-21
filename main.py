@@ -432,10 +432,10 @@ def main(args=None):
         dst = undistort_imgs(images)
 
         # Resize images for presentation
-        resized = resize_img(dst, resizePercent)
+        resized = resize_img(dst, resizePercent, displayImages=False)
 
         # Isolate fish contours
-        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=True)
+        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
 
         # Load and predict using the model
         predictions = load_predict_model(img_list_abs_path, arguments)
