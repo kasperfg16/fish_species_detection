@@ -11,7 +11,6 @@ path = os.path.abspath("cali_matlab.yaml")
 # path = os.path.abspath("cali_gopro_opencv.yaml")
 image_test_undis = os.path.abspath("fish_pics/input_images/cods/undis.jpg")
 
-cali = False
 displayCorners = False
 init_cali = True
 init_load_model = True
@@ -66,7 +65,7 @@ def load_images_from_folder(folder):
     return images
 
 
-def resize_img(imgs, scale_percent):
+def resize_img(imgs, scale_percent, displayImages=False):
     """
     Resizes a list of images with a percentage.
     :param imgs: A list of images to resize
@@ -83,6 +82,9 @@ def resize_img(imgs, scale_percent):
             dim = (width, height)
             resized = cv2.resize(n, dim, interpolation=cv2.INTER_AREA)
             resized_list.append(resized)
+            if displayImages:
+                cv2.imshow("Undistorted", resized)
+                cv2.waitKey(0)
 
         return resized_list
 
@@ -105,11 +107,11 @@ def calibrate_camera():
 
     global displayCorners
 
-    imgs = load_images_from_folder("Calibration")
+    imgs = load_images_from_folder("calibration_imgs")
     print(len(imgs))
 
     # Display image to see if the first image was read correctly and is grayscale
-    cv2.imshow("Undistorted", imgs[0])
+    cv2.imshow("Distorted", imgs[0])
     cv2.waitKey(0)
 
     print("Calibrating...")
@@ -306,6 +308,7 @@ def parse_arguments():
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
     parser.add_argument('--gpu', type=str, default='cuda', help='GPU or CPU')
     parser.add_argument('--arUco_marker_cur', type=float, default=19.2, help='ArUco marker circumference')
+    parser.add_argument('--calibrate', type=bool, default=False, help='Set to "True" if you want to calibrate')
 
     arguments = parser.parse_args()
 
@@ -338,13 +341,13 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
 
     :param prediction: The predicted species
     :param imgs: The list of images used for prediction
-    :param fishContours: All the contours of the fish
+    :param fishContours: All the contours o the fish
     :param arguments: The arguments for prediction
     :return: Displays fish size
     """
 
     # Load ArUco image for calibration
-    aruco_marker_img = cv2.imread(os.path.abspath("arUco_in_box_2.JPG"))
+    aruco_marker_img = cv2.imread(os.path.abspath("arUco_in_box.JPG"))
     list_aruco = [aruco_marker_img]
     aruco_marker_img_undi_list = undistort_imgs(list_aruco)
     aruco_marker_img = aruco_marker_img_undi_list[0]
@@ -424,14 +427,14 @@ def main(args=None):
     images, img_list_fish, img_list_abs_path = ftc.loadImages(arguments.image_dir_cods, edit_images=False, show_img=False)
 
     # Do we want to calibrate before undistorting the image?
-    if cali:
+    if arguments.calibrate:
         calibrate_camera()
     else:
         # Undistorts images
         dst = undistort_imgs(images)
 
         # Resize images for presentation
-        resized = resize_img(dst, resizePercent)
+        resized = resize_img(dst, resizePercent, displayImages=True)
 
         # Isolate fish contours
         isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
