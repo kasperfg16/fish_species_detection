@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-fish_pics/
 
 # C extensions
 *.so
@@ -147,3 +146,6 @@ Calibration/GOPR0397.JPG
 Calibration/GOPR0398.JPG
 Calibration/GOPR0399.JPG
 checkpoint.pth
+
+fish_pics/
+fish_pics/output_images/
