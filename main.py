@@ -1,3 +1,4 @@
+from ctypes import sizeof
 import cv2
 import numpy as np
 import os
@@ -189,8 +190,13 @@ def distance_between_points(p1, p2):
 
 def get_contour_middle(cnt):
     M = cv2.moments(cnt)
-    cX = int(M["m10"] / M["m00"])
-    cY = int(M["m01"] / M["m00"])
+    if M["m00"] != 0:
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
+    else:
+        # set values as what you need in the situation
+        cX, cY = 0, 0
+    
     center = (cX, cY)
 
     return center
@@ -245,15 +251,7 @@ def isolate_fish(imgs, img_list_fish, display=False):
         fishContours, __ = cv2.findContours(mask_cod_CLAHE[count], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         # Find biggest contour and the closest one to the middle of the image
-        for cont in fishContours:
-            area = cv2.contourArea(cont)
-            if area > biggestArea:
-                biggestArea = area
-                biggestCon = cont
-                biggestConList.append(biggestCon)
-
-        # Remove the background contour, as it is always the biggest contour in the image
-        del biggestConList[-1]
+        biggestConList = sorted(fishContours, key=cv2.contourArea, reverse= True)
 
         # Find the closest contour to the middle, only check the biggest contours
         for cont in biggestConList:
@@ -434,10 +432,10 @@ def main(args=None):
         dst = undistort_imgs(images)
 
         # Resize images for presentation
-        resized = resize_img(dst, resizePercent, displayImages=True)
+        resized = resize_img(dst, resizePercent)
 
         # Isolate fish contours
-        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
+        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=True)
 
         # Load and predict using the model
         predictions = load_predict_model(img_list_abs_path, arguments)
