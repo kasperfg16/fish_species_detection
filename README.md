@@ -1,42 +1,80 @@
 # Fish_species_detection
 Repo for fish species detection project at Aalborg University
 
-## This project is best used with
-https://colab.research.google.com/drive/1qksJvIxpnAULe_8XfI04jG13a-3klOKA?usp=sharing
+## Perquisites
+
+- This is developed for windows and only tested on Window 10 OS
 
 ## Setup
 
-1. Open a terminal
-
-    ### Create a conda enviroment
-
-    Create a Conda environment using:
+1. Download the repository:
 
     ``` bash
-    conda create -n env_pytorch python=3.6
+    https://github.com/kasperfg16/fish_species_detection.git
     ```
 
-    Activate the environment using:
+2. Open powershell as administrator
 
-    ``` bash
-    conda activate env_pytorch
-    ```
+    - a) 
+    
+        Run following command:
 
-    ### Install pytorch
+        ``` bash
+        New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
+        -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+        ```
 
-    Install PyTorch using conda:
+    - b)
+    
+        Close the powershell window and reboot your computer
 
-    ``` bash
-    conda install pytorch torchvision -c pytorch
-    ```
 
-    ### Install other dependancies
+2. Open command prompt
 
-    ``` bash
-    pip install pandas
-    ```
+    - a) 
+    
+        Navigate to the repository folder (...\fish_species_detection)
 
-## Inspiration
+        Example:
+
+        ``` bash
+        cd C:\Users\Kaspe\OneDrive\Onenote\GitHub\fish_species_detection
+        ```
+
+    - b)
+    
+        Create a conda environment
+
+        Create a conda environment and install required packages:
+
+        ``` bash
+        conda create -n env_pytorch python=3.10.4
+        ```
+    
+    - c)
+        
+        Activate the environment using:
+
+        ``` bash
+        conda activate env_pytorch
+        ```
+
+        Install required packages
+
+        ``` bash
+        pip install -r requirements.txt
+        ```
+
+## Use
+
+## Train your own classifier on your own dataset with google colab
+
+Follow the link and follow the instructions
+
+https://colab.research.google.com/drive/1qksJvIxpnAULe_8XfI04jG13a-3klOKA?usp=sharing
+
+
+## Inspiration used to create this project
 
 1. loading of images:
 
