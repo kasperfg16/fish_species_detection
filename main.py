@@ -6,11 +6,7 @@ import argparse
 import predict
 import functions_openCV as ftc
 from functions_openCV import claheHSL
-
-# Global variables
-path = os.path.abspath("cali_matlab.yaml")
-# path = os.path.abspath("cali_gopro_opencv.yaml")
-image_test_undis = os.path.abspath("fish_pics/input_images/cods/undis.jpg")
+import precision_plot as pp
 
 displayCorners = False
 init_cali = True
@@ -42,7 +38,9 @@ def load_coefficients():
 
     '''Loads the coefficients from a calibration file.'''
 
-    global path
+    basedir = os.path.dirname(os.path.abspath(__file__))
+    cali_file = '/cali_matlab.yaml'
+    path = basedir + cali_file
 
     # FILE_STORAGE_READ
     cv_file = cv2.FileStorage(path, cv2.FILE_STORAGE_READ)
@@ -298,7 +296,6 @@ def parse_arguments():
 
     # Command line arguments
     parser.add_argument('--image_dir', type=str, default="./fish_pics/input_images/", help='Absolute path to images')
-    parser.add_argument('--image_dir_cods', type=str, default="./fish_pics/input_images/cods/", help='Absolute path to images')
     parser.add_argument('--checkpoint', type=str,
                         default='./checkpoint.pth',
                         help='Path to checkpoint')
@@ -322,7 +319,7 @@ def load_predict_model(img_list, arguments):
     """
     # Load model (only needed once at startup)
     print("Loading model...")
-    checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.image_dir)
+    checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint)
     print("Model loaded")
 
     # Predict
@@ -345,7 +342,12 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
     """
 
     # Load ArUco image for calibration
-    aruco_marker_img = cv2.imread(os.path.abspath("arUco_in_box.JPG"))
+    basedir = os.path.dirname(os.path.abspath(__file__))
+    aruco_marker_img_name = '/arUco_in_box.JPG'
+    aruco_marker_img_path = basedir + aruco_marker_img_name
+    aruco_marker_img = cv2.imread(aruco_marker_img_path)
+
+    # Undistort image
     list_aruco = [aruco_marker_img]
     aruco_marker_img_undi_list = undistort_imgs(list_aruco)
     aruco_marker_img = aruco_marker_img_undi_list[0]
@@ -410,7 +412,7 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
 
         cv2.imshow("size", n)
         cv2.waitKey(0)
-
+        
         count += 1
 
 
@@ -419,10 +421,8 @@ def main(args=None):
     # Load arguments
     arguments = parse_arguments()
 
-    global image_test_undis
-
     # Load all the images
-    images, img_list_fish, img_list_abs_path = ftc.loadImages(arguments.image_dir_cods, edit_images=False, show_img=False)
+    images, img_list_fish, img_list_abs_path = ftc.loadImages(edit_images=False, show_img=False)
 
     # Do we want to calibrate before undistorting the image?
     if arguments.calibrate:
@@ -443,6 +443,8 @@ def main(args=None):
         # ArUco marker calibration for size estimation, displays results of the calculated size
         load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, predictions)
 
+        # Precision calculation
+        precision = pp.calc_len_est(img_list_abs_path)
 
 if __name__ == '__main__':
     main()

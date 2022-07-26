@@ -26,9 +26,15 @@ def save_checkpoint(model, training_dataset, arch, epochs, lr, hidden_units, inp
     torch.save(checkpoint, 'checkpoint.pth')
     
 # Function for loading the model checkpoint    
-def load_checkpoint(filepath, map_location, image_dir):
-    
-    checkpoint = torch.load(filepath, map_location=map_location)
+def load_checkpoint(checkpoint_path, map_location):
+
+    if not os.path.isfile(checkpoint_path):
+        print('Your path to the .pth file did not exist. Trying to find the file checkpoint.pth file instead')
+        basedir = os.path.dirname(os.path.abspath(__file__))
+        path_img_folder = '/checkpoint.pth'
+        checkpoint_path = basedir + path_img_folder
+
+    checkpoint = torch.load(checkpoint_path, map_location=map_location)
     
     if checkpoint['model_name'] == 'vgg':
         model = models.vgg16(pretrained=True)
@@ -42,6 +48,10 @@ def load_checkpoint(filepath, map_location, image_dir):
             param.requires_grad = False    
     
     model.class_to_idx = checkpoint['class_to_idx']
+
+    basedir = os.path.dirname(os.path.abspath(__file__))
+    path_img_folder = '/fish_pics/input_images/'
+    image_dir = basedir + path_img_folder
 
     subfolders = next(os.walk(image_dir))[1]
 
@@ -57,7 +67,7 @@ def load_checkpoint(filepath, map_location, image_dir):
     
     model.load_state_dict(checkpoint['model_state_dict'])
     
-    return model
+    return model, checkpoint
 
 
 # Function for the validation pass
@@ -178,9 +188,13 @@ def predict(image, model, hidden_size, device, topk=5):
 
     probabilities = torch.exp(output)
 
-    json_path = "classes_dictonary.json"
-    # Opening JSON file
+    
+    # Find the path to the .json file
+    basedir = os.path.dirname(os.path.abspath(__file__))
+    json_file_name = '/classes_dictonary.json'
+    json_path = basedir + json_file_name
 
+    # Opening JSON file
     f = open(json_path)
 
     # returns JSON object as

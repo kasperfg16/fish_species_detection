@@ -344,7 +344,7 @@ def crop(images, y, x, height, width):
     return cropped_images
 
 
-def loadImages(path, edit_images=False, show_img=False, scaling_percentage=30):
+def loadImages(edit_images=False, show_img=False, scaling_percentage=30):
     """
         Loads all the images inside a file.
 
@@ -354,9 +354,18 @@ def loadImages(path, edit_images=False, show_img=False, scaling_percentage=30):
     images = []
     class_names = []
     img_list_abs_path = []
+
+    # Find path to image folder
+    basedir = os.path.dirname(os.path.abspath(__file__))
+    path_img_folder = '/fish_pics/input_images/cods/'
+    path = basedir + path_img_folder
+
+    # Create list of img paths
     img_list = os.listdir(path)
     print("Loading in images...")
     print("Total images found:", len(img_list))
+    
+    
     for cl in img_list:
         # Find all the images in the file and save them in a list without the ".jpg"
         cur_img = cv2.imread(f"{path}/{cl}", 1)

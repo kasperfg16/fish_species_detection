@@ -2,9 +2,10 @@ import torch
 import model_functions
 import processing_functions
 
-def load_predition_model(checkpoint, image_dir):
+def load_predition_model(checkpoint_path):
+    
     # Load in a mapping from category label to category name
-    class_to_name_dict = processing_functions.load_json('classes_dictonary.json')
+    class_to_name_dict = processing_functions.load_json()
 
     if torch.cuda.is_available():
         map_location = torch.device('cuda')
@@ -15,9 +16,7 @@ def load_predition_model(checkpoint, image_dir):
         device = 'cpu'
     
     # Load pretrained network
-    model = model_functions.load_checkpoint(checkpoint, map_location, image_dir)
-
-    checkpoint = torch.load(checkpoint, map_location=map_location)
+    model, checkpoint = model_functions.load_checkpoint(checkpoint_path, map_location)
 
     return checkpoint, model, class_to_name_dict, device
 

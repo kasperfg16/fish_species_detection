@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import json
 import matplotlib.pyplot as plt
@@ -99,9 +100,14 @@ def imshow(image, ax=None, title=None):
 
 
 # Load class_to_name json file 
-def load_json(json_file):
+def load_json():
     
-    with open(json_file, 'r') as f:
+    # Find the path to the .json file
+    basedir = os.path.dirname(os.path.abspath(__file__))
+    json_file_name = '/classes_dictonary.json'
+    path = basedir + json_file_name
+
+    with open(path, 'r') as f:
         flower_to_name = json.load(f)
         return flower_to_name
     
