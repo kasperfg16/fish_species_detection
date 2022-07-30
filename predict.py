@@ -4,6 +4,15 @@ import processing_functions
 
 def load_predition_model(checkpoint_path):
     
+    """
+    Loads the prediction model for prediction (only needed once at startup).
+
+    :param arguments: The arguments for the predict model
+    :return: prediction model
+    """
+
+    print("Loading model...")
+
     # Load in a mapping from category label to category name
     class_to_name_dict = processing_functions.load_json()
 
@@ -18,6 +27,8 @@ def load_predition_model(checkpoint_path):
     # Load pretrained network
     model, checkpoint = model_functions.load_checkpoint(checkpoint_path, map_location)
 
+    print("Model loaded")
+
     return checkpoint, model, class_to_name_dict, device
 
 
@@ -30,8 +41,6 @@ def predict_species(img_list, topk, checkpoint, model, class_to_name_dict, devic
 
         # Scales, crops, and normalizes a PIL image for the PyTorch model; returns a Numpy array
         image = processing_functions.process_image(n, checkpoint['hidden_layer_units'])
-
-        processing_functions.imshow(image)
 
         # Highest k probabilities and the indices of those probabilities corresponding to the classes (converted to the
         # actual class labels)

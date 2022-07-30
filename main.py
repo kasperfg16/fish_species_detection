@@ -156,6 +156,8 @@ def undistort_imgs(images, displayImages=False):
     :return: A list of undistorted images
     """
 
+    print("Started undistorting the images!")
+
     mtx, dist = load_coefficients()
     undi_img = []
 
@@ -176,6 +178,8 @@ def undistort_imgs(images, displayImages=False):
         dst = dst[y:y + h, x:x + w]
 
         undi_img.append(dst)
+
+    print("Done undistorting the images!")
 
     return undi_img
 
@@ -310,25 +314,6 @@ def parse_arguments():
     return arguments
 
 
-def load_predict_model(img_list, arguments):
-    """
-    Loads the prediction model for prediction.
-
-    :param arguments: The arguments for the predict model
-    :return: The predicted species
-    """
-    # Load model (only needed once at startup)
-    print("Loading model...")
-    checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint)
-    print("Model loaded")
-
-    # Predict
-    predictions = predict.predict_species(img_list, arguments.topk, checkpoint, model, class_to_name_dict,
-                                         device)
-
-    return predictions
-
-
 def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, prediction):
 
     """
@@ -340,6 +325,8 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
     :param arguments: The arguments for prediction
     :return: Displays fish size
     """
+
+    len_estimate = []
 
     # Load ArUco image for calibration
     basedir = os.path.dirname(os.path.abspath(__file__))
@@ -412,8 +399,12 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
 
         cv2.imshow("size", n)
         cv2.waitKey(0)
+
+        len_estimate.append(w_cm)
         
         count += 1
+
+    return len_estimate
 
 
 def main(args=None):
@@ -437,14 +428,18 @@ def main(args=None):
         # Isolate fish contours
         isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
 
-        # Load and predict using the model
-        predictions = load_predict_model(img_list_abs_path, arguments)
+        # Load the prediction model
+        checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint)
+
+        # Predict
+        predictions = predict.predict_species(img_list_abs_path, arguments.topk, checkpoint, model, class_to_name_dict,
+                                            device)
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
-        load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, predictions)
+        len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, predictions)
 
         # Precision calculation
-        precision = pp.calc_len_est(img_list_abs_path)
+        pp.calc_len_est(img_list_abs_path, len_estimate)
 
 if __name__ == '__main__':
     main()

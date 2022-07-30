@@ -67,6 +67,11 @@ Repo for fish species detection project at Aalborg University
 
 ## Use
 
+
+## Method used
+
+1. Use a checker board for calibration https://github.com/opencv/opencv/blob/4.x/doc/pattern.png
+
 ## Train your own classifier on your own dataset with google colab
 
 Follow the link and follow the instructions
