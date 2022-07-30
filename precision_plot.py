@@ -1,5 +1,3 @@
-from cProfile import label
-from cgitb import handler
 import math
 from matplotlib import pyplot as plt
 import numpy as np
@@ -17,6 +15,7 @@ def calc_len_est(img_list_abs_path, len_estimate_list):
     aruco_marker_img_path = basedir + aruco_marker_img_name
     df = pd.read_excel(aruco_marker_img_path)
 
+    # Make list of photo numbers e.g: GOPRO0012.jpg -> 12
     for img_path in img_list_abs_path:
         
         img_name_jpg = os.path.split(img_path)[-1]
@@ -45,32 +44,59 @@ def calc_len_est(img_list_abs_path, len_estimate_list):
     # Have used this website for formulas: https://www.wikihow.com/Calculate-Precision
     len_real_array = np.array(len_real_list)
     len_estimate_array = np.array(len_estimate_list)
-
+    
+    # Absolute deviation
     abs_dev = abs(len_real_array - len_estimate_array)
 
     len_of_array = len(abs_dev)
 
-    print(len_estimate_array)
-    print('abs_dev', abs_dev)
     remove_list = []
     for i in range(0, len_of_array-1):
-        if abs_dev[i] > 20:
+        if abs_dev[i] > 15:
             remove_list.append(i)
 
     abs_dev = np.delete(abs_dev, remove_list)
     len_estimate_array = np.delete(len_estimate_array, remove_list)
     len_real_array = np.delete(len_real_array, remove_list)
 
-    print(len_estimate_array)
-    print('abs_dev', abs_dev)
-
+    # Average deviation
     avg_dev = np.mean(abs_dev)
+    error_array = len_real_array - len_estimate_array
+    # Standard deviation
+    std_dev = math.sqrt(sum(pow(error_array,2))/(len(error_array)-1))
+    # Median deviation
+    median = np.median(abs_dev)
+    # Max error
     max_error = max(abs_dev)
 
-    error_array = len_real_array - len_estimate_array
-    std_dev = math.sqrt(sum(pow(error_array,2))/(len(error_array)-1))
+    ##############################################
+    #  Experiment
 
+    # Deviation avg
+    dev = len_real_array - len_estimate_array
+
+    # Average deviation
+    dev_avg = np.mean(dev)
+
+    len_estimate_array = len_estimate_array + dev_avg
+
+    file1 = open("dev_avg.txt", "w") 
+    file1.write("dev_avg = " + str(dev_avg))
+    file1.close()
+
+    # Absolute deviation
+    abs_dev = abs(len_real_array - len_estimate_array)
+    # Average deviation
+    avg_dev = np.mean(abs_dev)
+    error_array = len_real_array - len_estimate_array
+    # Standard deviation
+    std_dev = math.sqrt(sum(pow(error_array,2))/(len(error_array)-1))
+    # Median deviation
     median = np.median(abs_dev)
+    # Max error
+    max_error = max(abs_dev)
+
+    ##############################################
 
     # Create plots
     plt.close('all')
@@ -90,10 +116,7 @@ def calc_len_est(img_list_abs_path, len_estimate_list):
     labels = labels[len(labels)-1:]
     ax1[0].legend(handles=handles, labels=labels, loc='upper left', shadow=True, fontsize='large')
 
-    textstr = 'Estimate list (cm): ' + str(len_estimate_list)
-    textstr = textstr + '\n' + 'Ground truth list (cm): ' + str(len_real_list)
-    textstr = textstr + '\n' + 'Absolute deviation (cm): ' + str(abs_dev)
-    textstr = textstr + '\n' + 'Average deviation: \u00B1' + str(avg_dev) + ' cm'
+    textstr = 'Average deviation: \u00B1' + str(avg_dev) + ' cm'
     textstr = textstr + '\n' + 'Standard deviation: \u00B1' + str(std_dev) + ' cm'
     textstr = textstr + '\n' + 'Median deviation: \u00B1' + str(median) + ' cm'
     textstr = textstr + '\n' + 'Max error: \u00B1' + str(max_error) + ' cm'
