@@ -1,7 +1,10 @@
 {
     "cSpell.words": [
+        "clahe",
         "colab",
         "conda",
+        "cuda",
+        "objpoints",
         "seacreatures"
     ]
 }

@@ -3,8 +3,8 @@ import model_functions
 import processing_functions
 import argparse
 import extra_functions as ef
-
-from torchvision import datasets, transforms, models
+from torchvision.models import AlexNet_Weights, VGG16_Weights
+from torchvision import models
 from collections import OrderedDict
 from torch import optim
 from torch import nn
@@ -16,22 +16,14 @@ parser = argparse.ArgumentParser(description='Train Image Classifier')
 parser.add_argument('--arch', type = str, default = 'vgg', help = 'NN Model Architecture')
 parser.add_argument('--learning_rate', type = float, default = 0.001, help = 'Learning Rate')
 parser.add_argument('--hidden_units', type = int, default = 10000, help = 'Neurons in the Hidden Layer')
-parser.add_argument('--epochs', type = int, default = 20, help = 'Epochs')
+parser.add_argument('--epochs', type = int, default = 40, help = 'Epochs')
 parser.add_argument('--gpu', type = str, default = 'cuda', help = 'GPU or CPU')
 parser.add_argument('--save_dir', type = str, default = 'checkpoint.pth', help = 'Path to checkpoint')
-parser.add_argument('--percent_train', type = int, default = 90, help = 'How much of the data set should be used for training (How much is used for testing = 100% - percent_train)')
+parser.add_argument('--percent_train', type = int, default = 90, help = 'How much of the data set should be used for training ((How much is used for testing) = 100% - percent_train)')
 
 arguments = parser.parse_args()
 
-# Image data directories
-img_folder_path = 'images'
-
-data_dir, num_classes = ef.make_data_sets(img_folder_path, arguments.percent_train)
-
-# Divide images into train, test, and validation folders:
-train_dir = data_dir + '/train'
-valid_dir = data_dir + '/validation'
-test_dir = data_dir + '/test'
+num_classes, train_dir, valid_dir, test_dir = ef.make_data_sets(arguments.percent_train)
 
 # Transforms for the training, validation, and testing sets
 training_transforms, validation_transforms, testing_transforms = processing_functions.data_transforms()
@@ -47,10 +39,11 @@ test_loader = torch.utils.data.DataLoader(testing_dataset, batch_size=32)
 # Build and train the neural network (Transfer Learning)
 if arguments.arch == 'vgg':
     input_size = 25088
-    model = models.vgg16(pretrained=True)
+    model = models.vgg16(weights = VGG16_Weights.IMAGENET1K_V1)
 elif arguments.arch == 'alexnet':
     input_size = 9216
-    model = models.alexnet(pretrained=True)
+    model = models.alexnet(weights = AlexNet_Weights.IMAGENET1K_V1)
+    models.alexnet()
     
 print(model)
 

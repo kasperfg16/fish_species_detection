@@ -3,6 +3,7 @@ import os, os.path
 import torch
 import processing_functions
 from torch import nn
+from torchvision.models import VGG16_Weights, AlexNet_Weights
 from torchvision import models
 from collections import OrderedDict
 from workspace_utils import active_session
@@ -37,10 +38,10 @@ def load_checkpoint(checkpoint_path, map_location):
     checkpoint = torch.load(checkpoint_path, map_location=map_location)
     
     if checkpoint['model_name'] == 'vgg':
-        model = models.vgg16(pretrained=True)
+        model = models.vgg16(weights=VGG16_Weights.DEFAULT)
         
     elif checkpoint['model_name'] == 'alexnet':  
-        model = models.alexnet(pretrained=True)
+        model = models.alexnet(weights=AlexNet_Weights.DEFAULT)
     else:
         print("Architecture not recognized.")
         
@@ -71,14 +72,14 @@ def load_checkpoint(checkpoint_path, map_location):
 
 
 # Function for the validation pass
-def validation(model, validateloader, criterion, gpu):
+def validation(model, validateloader, criterion, device):
     
     val_loss = 0
     accuracy = 0
     
     for images, labels in iter(validateloader):
 
-        images, labels = images.to(gpu), labels.to(gpu)
+        images, labels = images.to(device), labels.to(device)
 
         output = model.forward(images)
         val_loss += criterion(output, labels).item()
@@ -92,11 +93,20 @@ def validation(model, validateloader, criterion, gpu):
 
 
 # Function for measuring network accuracy on test data
-def test_accuracy(model, test_loader, gpu):
+def test_accuracy(model, test_loader, device):
 
     # Do validation on the test set
     model.eval()
-    model.to(gpu)
+
+    if device == 'cuda':
+        if not torch.cuda.is_available():
+            print("Could not find cuda enabled GPU")
+            device = 'cpu'
+    else: 
+        device = 'cpu'
+
+    print("Device used for classification: ", device)
+    model.to(device)
 
     with torch.no_grad():
     
@@ -104,7 +114,7 @@ def test_accuracy(model, test_loader, gpu):
     
         for images, labels in iter(test_loader):
     
-            images, labels = images.to(gpu), labels.to(gpu)
+            images, labels = images.to(device), labels.to(device)
     
             output = model.forward(images)
 
@@ -115,55 +125,64 @@ def test_accuracy(model, test_loader, gpu):
             accuracy += equality.type(torch.FloatTensor).mean()
         
         print("Test Accuracy: {}".format(accuracy/len(test_loader)))    
+
+        acc = accuracy/len(test_loader)
+    return acc
         
 
 # Train the classifier
-def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, validate_loader, gpu):
+def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, validate_loader, device):
 
-    with active_session():
+    epochs = arg_epochs
+    steps = 0
+    print_every = 3
 
-        epochs = arg_epochs
-        steps = 0
-        print_every = 3
+    if device == 'cuda':
+        if not torch.cuda.is_available():
+            print("Could not find cuda enabled GPU")
+            device = 'cpu'
+    else: 
+        device = 'cpu'
 
-        model.to(gpu)
+    print("Device used for training: ", device)
+    model.to(device)
 
-        for e in range(epochs):
-        
-            model.train()
+    for e in range(epochs):
     
-            running_loss = 0
+        model.train()
+
+        running_loss = 0
+
+        for images, labels in iter(train_loader):
     
-            for images, labels in iter(train_loader):
-        
-                steps += 1
-        
-                images, labels = images.to(gpu), labels.to(gpu)
-        
-                optimizer.zero_grad()
-        
-                output = model.forward(images)
-                loss = criterion(output, labels)
-                loss.backward()
-                optimizer.step()
-        
-                running_loss += loss.item()
-        
-                if steps % print_every == 0:
-                
-                    model.eval()
-                
-                    # Turn off gradients for validation, saves memory and computations
-                    with torch.no_grad():
-                        validation_loss, accuracy = validation(model, validate_loader, criterion, gpu)
+            steps += 1
+    
+            images, labels = images.to(device), labels.to(device)
+    
+            optimizer.zero_grad()
+    
+            output = model.forward(images)
+            loss = criterion(output, labels)
+            loss.backward()
+            optimizer.step()
+    
+            running_loss += loss.item()
+    
+            if steps % print_every == 0:
             
-                    print("Epoch: {}/{}.. ".format(e+1, epochs),
-                          "Training Loss: {:.3f}.. ".format(running_loss/print_every),
-                          "Validation Loss: {:.3f}.. ".format(validation_loss/len(validate_loader)),
-                          "Validation Accuracy: {:.3f}".format(accuracy/len(validate_loader)))
+                model.eval()
+            
+                # Turn off gradients for validation, saves memory and computations
+                with torch.no_grad():
+                    validation_loss, accuracy = validation(model, validate_loader, criterion, device)
+        
+                print("Epoch: {}/{}.. ".format(e+1, epochs),
+                        "Training Loss: {:.3f}.. ".format(running_loss/print_every),
+                        "Validation Loss: {:.3f}.. ".format(validation_loss/len(validate_loader)),
+                        "Validation Accuracy: {:.3f}".format(accuracy/len(validate_loader)))
 
-                    running_loss = 0
-                    model.train()      
+                running_loss = 0
+                model.train()      
                     
                     
 def predict(image, model, hidden_size, device, topk=5):
@@ -174,8 +193,11 @@ def predict(image, model, hidden_size, device, topk=5):
 
     # Convert image to PyTorch tensor
     if device == 'cuda':
-        image = torch.from_numpy(image).type(torch.cuda.FloatTensor)
-    else:
+        if not torch.cuda.is_available():
+            print("Could not find cuda enabled GPU")
+            device = 'cpu'
+            image = torch.from_numpy(image).type(torch.FloatTensor)
+    if device == 'cpu': 
         image = torch.from_numpy(image).type(torch.FloatTensor)
 
     print("Device used for classification: ", device)
