@@ -39,9 +39,6 @@ def predict_species(img_list, topk, checkpoint, model, class_to_name_dict, devic
 
     for n in img_list:
 
-        # Scales, crops, and normalizes a PIL image for the PyTorch model; returns a Numpy array
-        image = processing_functions.process_image(n, checkpoint['hidden_layer_units'])
-
         # Highest k probabilities and the indices of those probabilities corresponding to the classes (converted to the
         # actual class labels)
         probabilities, classes = model_functions.predict(n, model, checkpoint['hidden_layer_units'], device, topk=topk)

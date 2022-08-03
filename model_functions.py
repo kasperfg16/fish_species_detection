@@ -147,43 +147,63 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     print("Device used for training: ", device)
     model.to(device)
 
-    for e in range(epochs):
-    
-        model.train()
+    # Check if user specified number of epochs or set to -1 for validation accuracy to reach is 100%
+    if not arg_epochs == -1:
+        num_epochs = arg_epochs
+    else:
+        num_epochs = 1
 
-        running_loss = 0
+    Val_acc = 0
+    epoch = 0
 
-        for images, labels in iter(train_loader):
-    
-            steps += 1
-    
-            images, labels = images.to(device), labels.to(device)
-    
-            optimizer.zero_grad()
-    
-            output = model.forward(images)
-            loss = criterion(output, labels)
-            loss.backward()
-            optimizer.step()
-    
-            running_loss += loss.item()
-    
-            if steps % print_every == 0:
-            
-                model.eval()
-            
-                # Turn off gradients for validation, saves memory and computations
-                with torch.no_grad():
-                    validation_loss, accuracy = validation(model, validate_loader, criterion, device)
-        
-                print("Epoch: {}/{}.. ".format(e+1, epochs),
-                        "Training Loss: {:.3f}.. ".format(running_loss/print_every),
-                        "Validation Loss: {:.3f}.. ".format(validation_loss/len(validate_loader)),
-                        "Validation Accuracy: {:.3f}".format(accuracy/len(validate_loader)))
+    # Run while 'ctrl+c' is not pressed
+    try:
+        # Either run until validation accuracy is 100% or until specified epoch number is reached.
+        while not Val_acc == 1:
+            for e in range(num_epochs):
+                epoch += 1
+                model.train()
 
                 running_loss = 0
-                model.train()      
+
+                for images, labels in iter(train_loader):
+            
+                    steps += 1
+            
+                    images, labels = images.to(device), labels.to(device)
+            
+                    optimizer.zero_grad()
+            
+                    output = model.forward(images)
+                    loss = criterion(output, labels)
+                    loss.backward()
+                    optimizer.step()
+            
+                    running_loss += loss.item()
+            
+                    if steps % print_every == 0:
                     
+                        model.eval()
+                    
+                        # Turn off gradients for validation, saves memory and computations
+                        with torch.no_grad():
+                            validation_loss, accuracy = validation(model, validate_loader, criterion, device)
+                
+                        Val_acc = accuracy/len(validate_loader)
+                        if arg_epochs == -1:
+                            print("Epoch: {}/{}.. ".format(epoch))
+                        else:
+                            print("Epoch: {}/{}.. ".format(e+1, epochs))
+
+                        print(
+                            "Training Loss: {:.3f}.. ".format(running_loss/print_every),
+                            "Validation Loss: {:.3f}.. ".format(validation_loss/len(validate_loader)),
+                            "Validation Accuracy: {:.3f}".format(Val_acc))
+
+                        running_loss = 0 
+
+    except KeyboardInterrupt:
+                pass
                     
 def predict(image, model, hidden_size, device, topk=5):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
