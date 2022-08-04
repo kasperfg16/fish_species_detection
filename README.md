@@ -28,7 +28,7 @@ Repo for fish species detection project at Aalborg University
     The camera intrinsics and distortion coefficients are loaded and used to undistort the images of cods.
 
 5.
-    An ArUco marker is printed and mounted on a flat board and put into the fish box. ![ArUco in box](arUco_in_box.JPG):
+    An ArUco marker is printed and mounted on a flat board and put into the fish box: ![ArUco in box](arUco_in_box.JPG)
 
     This image is used with cv2 functions to find the circumference of the ArUco markers in pixels. The circumference is then measured with physically in mm. By deviding the circumference in pixel with the circumference in mm gives a mm/pixel ratio
 
@@ -117,9 +117,27 @@ Go through **Setup**
 
     Then run [train.py](train.py)
 
+    To stop the training press ctrl+c **ONCE**. This will stop the training at the point where it is and save the model.
+
 2. ### K-fold validation
 
     Run [train_k_fold_val.py](train_k_fold_val.py)
+
+    NOTE: The number of k's is set to default of 5. To change this run:
+
+    ``` bash
+    Run python train_k_fold_val.py --num_of_k = <number of k that you want>
+    ```
+
+    ``` bash
+    Run python train_k_fold_val.py --epocs = <number of epocs that you want>
+    ```
+
+    To see the rest of the arguments run:
+
+    ``` bash
+    Run python train_k_fold_val.py help
+    ```
 
 3. ### To run main code
 

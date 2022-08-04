@@ -204,6 +204,10 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
 
                         running_loss = 0 
 
+            # Do not run until model is 100% correct on validation set if a number of epocs is set
+            if arg_epochs == -1:
+                Val_acc = 1
+
     except KeyboardInterrupt:
                 pass
                     
