@@ -2,7 +2,7 @@ import torch
 import model_functions
 import processing_functions
 
-def load_predition_model(checkpoint_path):
+def load_predition_model(checkpoint_path, device):
     
     """
     Loads the prediction model for prediction (only needed once at startup).
@@ -16,11 +16,15 @@ def load_predition_model(checkpoint_path):
     # Load in a mapping from category label to category name
     class_to_name_dict = processing_functions.load_json()
 
-    if torch.cuda.is_available():
-        map_location = torch.device('cuda')
-        device = 'cuda'
-
-    else:
+    if device == 'cuda':
+        if not torch.cuda.is_available():
+            print("Could not find cuda enabled GPU")
+            map_location = torch.device('cpu')
+            device = 'cpu'
+        else:
+            map_location = torch.device('cuda')
+            print("Device used for training: ", torch.cuda.get_device_name())
+    else: 
         map_location = torch.device('cpu')
         device = 'cpu'
     

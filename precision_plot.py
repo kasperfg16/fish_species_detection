@@ -25,7 +25,7 @@ def calc_len_est(img_list_abs_path, len_estimate_list):
         img_number = int(img_name[-4:])
 
         img_num_list.append(img_number)
-
+    
     # If the image number matches a number in the "Photo" seacreatures.xlsx take the corresponding "Lenght"
     # In seacreatures.xlsx there is only every second number e.g 12, 14 ..., but we have image numbers 12,13,14 ...
     for img_number in img_num_list:

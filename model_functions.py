@@ -141,10 +141,12 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
         if not torch.cuda.is_available():
             print("Could not find cuda enabled GPU")
             device = 'cpu'
+        else:
+            print("Device used for training: ", torch.cuda.get_device_name())
     else: 
         device = 'cpu'
 
-    print("Device used for training: ", device)
+    print("Type of device used for training: ", device)
     model.to(device)
 
     # Check if user specified number of epochs or set to -1 for validation accuracy to reach is 100%
@@ -160,6 +162,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     try:
         # Either run until validation accuracy is 100% or until specified epoch number is reached.
         while not Val_acc == 1:
+            torch.cuda.empty_cache()
             for e in range(num_epochs):
                 epoch += 1
                 model.train()
@@ -191,7 +194,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                 
                         Val_acc = accuracy/len(validate_loader)
                         if arg_epochs == -1:
-                            print("Epoch: {}/{}.. ".format(epoch))
+                            print("Epoch: {} ".format(epoch))
                         else:
                             print("Epoch: {}/{}.. ".format(e+1, epochs))
 
@@ -214,22 +217,22 @@ def predict(image, model, hidden_size, device, topk=5):
     # Convert image to PyTorch tensor
     if device == 'cuda':
         if not torch.cuda.is_available():
-            print("Could not find cuda enabled GPU")
+            print("Could not find cuda enabled GPU using cpu instead")
             device = 'cpu'
-            image = torch.from_numpy(image).type(torch.FloatTensor)
-    if device == 'cpu': 
-        image = torch.from_numpy(image).type(torch.FloatTensor)
+    
+    image = torch.from_numpy(image).type(torch.FloatTensor)
 
     print("Device used for classification: ", device)
     model.to(device)
 
     # Returns a new tensor with a dimension of size one inserted at the specified position.
     image = image.unsqueeze(0)
-
+    if device == 'cuda':
+        image = image.cuda()
+    
     output = model.forward(image)
 
     probabilities = torch.exp(output)
-
     
     # Find the path to the .json file
     basedir = os.path.dirname(os.path.abspath(__file__))

@@ -1,3 +1,4 @@
+from ast import arg
 from ctypes import sizeof
 import cv2
 import numpy as np
@@ -305,7 +306,7 @@ def parse_arguments():
                         help='Path to checkpoint')
     parser.add_argument('--topk', type=int, default=5, help='Top k classes and probabilities')
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
-    parser.add_argument('--gpu', type=str, default='cuda', help='GPU or CPU')
+    parser.add_argument('--device', type=str, default='cuda', help='\'cuda\' for GPU or \'cpu\' for CPU')
     parser.add_argument('--arUco_marker_cur', type=float, default=19.2, help='ArUco marker circumference')
     parser.add_argument('--calibrate', type=bool, default=False, help='Set to "True" if you want to calibrate')
 
@@ -429,7 +430,7 @@ def main(args=None):
         isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
 
         # Load the prediction model
-        checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint)
+        checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.device)
 
         # Predict
         predictions = predict.predict_species(img_list_abs_path, arguments.topk, checkpoint, model, class_to_name_dict,
