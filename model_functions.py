@@ -16,7 +16,7 @@ def save_checkpoint(model, training_dataset, arch, epochs, lr, hidden_units, inp
     checkpoint = {'input_size': (3, 224, 224),
                   'output_size': 102,
                   'hidden_layer_units': hidden_units,
-                  'batch_size': 64,
+                  'batch_size': 1,
                   'learning_rate': lr,
                   'model_name': arch,
                   'model_state_dict': model.state_dict(),
@@ -139,7 +139,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
 
     if device == 'cuda':
         if not torch.cuda.is_available():
-            print("Could not find cuda enabled GPU")
+            print("Could not find cuda enabled GPU using cpu instead")
             device = 'cpu'
         else:
             print("Device used for training: ", torch.cuda.get_device_name())
@@ -162,9 +162,8 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     try:
         # Either run until validation accuracy is 100% or until specified epoch number is reached.
         while not Val_acc == 1:
-            torch.cuda.empty_cache()
             for e in range(num_epochs):
-                epoch += 1
+                epoch = epoch + 1
                 model.train()
 
                 running_loss = 0
@@ -218,9 +217,12 @@ def predict(image, model, hidden_size, device, topk=5):
     if device == 'cuda':
         if not torch.cuda.is_available():
             print("Could not find cuda enabled GPU using cpu instead")
+            image = torch.from_numpy(image).type(torch.FloatTensor)
             device = 'cpu'
-    
-    image = torch.from_numpy(image).type(torch.FloatTensor)
+        else:
+            image = torch.from_numpy(image).type(torch.cuda.FloatTensor)
+    elif device == 'cpu':
+        image = torch.from_numpy(image).type(torch.FloatTensor)
 
     print("Device used for classification: ", device)
     model.to(device)

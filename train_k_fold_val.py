@@ -1,4 +1,5 @@
 from numpy import mean
+from pandas import array
 import torch
 import model_functions
 import processing_functions
@@ -16,12 +17,15 @@ parser = argparse.ArgumentParser(description='Train Image Classifier')
 # Command line arguments
 parser.add_argument('--arch', type = str, default = 'vgg', help = 'NN Model Architecture')
 parser.add_argument('--learning_rate', type = float, default = 0.001, help = 'Learning Rate')
-parser.add_argument('--hidden_units', type = int, default = 10000, help = 'Neurons in the Hidden Layer')
+parser.add_argument('--hidden_units', type = int, default = 9400, help = 'Neurons in the Hidden Layer')
 parser.add_argument('--epochs', type = int, default = -1, help = 'Epochs. If epochs = -1 the training will run until the validation accuracy is = 100%')
 parser.add_argument('--gpu', type = str, default = 'cuda', help = 'GPU or CPU')
 parser.add_argument('--save_dir', type = str, default = 'checkpoint.pth', help = 'Path to checkpoint')
 parser.add_argument('--percent_train', type = int, default = 80, help = 'How much of the data set should be used for training ((How much is used for testing) = 100% - percent_train)')
 parser.add_argument('--num_of_k', type = int, default = 1, help = 'How many k\'s in k-fold validation')
+parser.add_argument('--batch_size_train_loader', type = int, default = 3, help = 'Batch size for train_loader when training neural network')
+parser.add_argument('--batch_size_validate_loader', type = int, default = 3, help = 'Batch size for validate_loader when training neural network')
+parser.add_argument('--batch_size_test_loader', type = int, default = 3, help = 'Batch size for test_loader when training neural network')
 
 arguments = parser.parse_args()
 
@@ -38,9 +42,9 @@ for k in range(arguments.num_of_k):
     training_dataset, validation_dataset, testing_dataset = processing_functions.load_datasets(train_dir, training_transforms, valid_dir, validation_transforms, test_dir, testing_transforms)
 
     # Using the image datasets and the trainforms, define the dataloaders
-    train_loader = torch.utils.data.DataLoader(training_dataset, batch_size=64, shuffle=True)
-    validate_loader = torch.utils.data.DataLoader(validation_dataset, batch_size=32)
-    test_loader = torch.utils.data.DataLoader(testing_dataset, batch_size=32)
+    train_loader = torch.utils.data.DataLoader(training_dataset, batch_size=arguments.batch_size_train_loader, shuffle=True)
+    validate_loader = torch.utils.data.DataLoader(validation_dataset, batch_size=arguments.batch_size_validate_loader)
+    test_loader = torch.utils.data.DataLoader(testing_dataset, batch_size=arguments.batch_size_test_loader)
 
     # Build and train the neural network (Transfer Learning)
     if arguments.arch == 'vgg':
