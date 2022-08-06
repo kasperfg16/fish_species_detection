@@ -2,8 +2,12 @@ import os, os.path
 import shutil
 import json
 import random
+from functions import save_img
+import functions_openCV as ftc
 
-def make_data_sets(percent_train=80):
+from main import undistort_imgs
+
+def make_data_sets(percent_train=80, undistort=False, remake=False):
     '''
     # Divide images into train, test, and validation folders:
     '''
@@ -17,11 +21,12 @@ def make_data_sets(percent_train=80):
     data_dir = '/data_set'
     data_dir_path = basedir + data_dir
 
-    # Remove old dataset
-    if os.path.exists(data_dir_path):
-        shutil.rmtree(data_dir_path)
+    # Remove old dataset if requested
+    if remake:
+        if os.path.exists(data_dir_path):
+            shutil.rmtree(data_dir_path)
 
-    # Find subfolders in /images
+    # Find subfolders in /fish_pics/input_images/
     subfolders = next(os.walk(img_folder_path))[1]
 
     num_classes = len(subfolders)
@@ -84,17 +89,34 @@ def make_data_sets(percent_train=80):
             with open(json_file_path, 'w') as f:
                 json.dump(data, f)
 
-    # Create a validation folder
-    folder_name = "validation"
-
-    source_dir = img_folder_path
-    valid_dir = os.path.join(data_dir_path, folder_name)
-    shutil.copytree(source_dir, valid_dir)
-
     # Directories for "train" and "test"
     folder_name = "train"
     train_dir = os.path.join(data_dir_path, folder_name)
     folder_name = "test"
     test_dir = os.path.join(data_dir_path, folder_name)
+
+    # Undistort the images that were just put into the test and train folders
+    if undistort:
+        
+        dir_list = [test_dir, train_dir]
+
+        for folder in dir_list:
+            train_sub_dirs = next(os.walk(folder))[1]
+            
+            for subfolder in train_sub_dirs:
+                load_folder = os.path.join(folder, subfolder)
+                images, img_names, img_list_abs_path = ftc.loadImages(folder=load_folder, edit_images=False, show_img=False, full_path=True)
+                dst = undistort_imgs(images)
+                
+                save_folder = os.path.join(folder, subfolder)
+                ftc.save_imgOPENCV(imgs=dst, path=save_folder, originPathNameList=img_names)
+
+
+    # Create a validation folder
+    folder_name = "validation"
+
+    source_dir = train_dir
+    valid_dir = os.path.join(data_dir_path, folder_name)
+    shutil.copytree(source_dir, valid_dir)
 
     return num_classes, train_dir, valid_dir, test_dir

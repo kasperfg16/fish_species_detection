@@ -303,7 +303,7 @@ def showSteps(stepsList, CLAHE=False):
     plt.show()
 
 
-def save_imgOPENCV(imgs, path, originPathNameList, img_tag=None):
+def save_imgOPENCV(imgs, originPathNameList, path='', img_tag=''):
     '''
     Saves a list of images in the folder that the path is set to.
 
@@ -311,16 +311,18 @@ def save_imgOPENCV(imgs, path, originPathNameList, img_tag=None):
     :param imgs: A list of images.
     :param path: The path that the images will be saved to.
     :param img_tag: Tag that is is added to the original image file name e.g. filname + img_tag = filnameimg_tag.JPG
+    :param numbering: Set to true if the image names should be numbered when saved
     :return: None
     '''
 
-    print('Saving images')
+    print('Saving images in:', path)
 
     count = 0
     if len(imgs) > 0:
         for n in imgs:
             cv2.imwrite(path + f"\\{originPathNameList[count] + img_tag}.JPG", n)
             count = count + 1
+
 
     print('Done saving images')
 
@@ -344,7 +346,7 @@ def crop(images, y, x, height, width):
     return cropped_images
 
 
-def loadImages(edit_images=False, show_img=False, scaling_percentage=30):
+def loadImages(folder='/fish_pics/input_images/cods/', edit_images=False, show_img=False, scaling_percentage=30, full_path=False):
     """
         Loads all the images inside a file.
 
@@ -352,17 +354,20 @@ def loadImages(edit_images=False, show_img=False, scaling_percentage=30):
     """
 
     images = []
-    class_names = []
+    img_names = []
     img_list_abs_path = []
 
     # Find path to image folder
-    basedir = os.path.dirname(os.path.abspath(__file__))
-    path_img_folder = '/fish_pics/input_images/cods/'
-    path = basedir + path_img_folder
+    if not full_path:
+        path_img_folder = folder
+        basedir = os.path.dirname(os.path.abspath(__file__))
+        path = basedir + path_img_folder
+    else:
+        path = folder
 
     # Create list of img paths
     img_list = os.listdir(path)
-    print("Loading in images...")
+    print("Loading in images from:", path, "...")
     print("Total images found:", len(img_list))
     
     
@@ -384,7 +389,7 @@ def loadImages(edit_images=False, show_img=False, scaling_percentage=30):
 
         # Append them into the list
         images.append(cur_img)
-        class_names.append(img_name)
+        img_names.append(img_name)
         img_list_abs_path.append(path+cl)
 
     # Remove the image window after we have checked all the pictures
@@ -392,7 +397,7 @@ def loadImages(edit_images=False, show_img=False, scaling_percentage=30):
 
     print("Done loading the images!")
 
-    return images, class_names, img_list_abs_path
+    return images, img_names, img_list_abs_path
 
 
 def saveCDI(img_list_fish, percSpotCoverage):

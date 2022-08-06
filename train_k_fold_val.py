@@ -1,6 +1,8 @@
+from ast import arg
 from numpy import mean
 from pandas import array
 import torch
+from main import undistort_imgs
 import model_functions
 import processing_functions
 import argparse
@@ -26,14 +28,17 @@ parser.add_argument('--num_of_k', type = int, default = 1, help = 'How many k\'s
 parser.add_argument('--batch_size_train_loader', type = int, default = 3, help = 'Batch size for train_loader when training neural network')
 parser.add_argument('--batch_size_validate_loader', type = int, default = 3, help = 'Batch size for validate_loader when training neural network')
 parser.add_argument('--batch_size_test_loader', type = int, default = 3, help = 'Batch size for test_loader when training neural network')
+parser.add_argument('--remake', type = bool, default = True, help = 'Remake data set (Use if training must be done with more or different images in the folder /input_images)')
+parser.add_argument('--undistort', type = bool, default = True, help = 'set to False to not undistort images when training')
 
 arguments = parser.parse_args()
 
 acc_list = []
 
 for k in range(arguments.num_of_k):
+    print('Number of k\'th iteration: ', k, 'of: ', arguments.num_of_k)
 
-    num_classes, train_dir, valid_dir, test_dir = ef.make_data_sets(arguments.percent_train)
+    num_classes, train_dir, valid_dir, test_dir = ef.make_data_sets(arguments.percent_train, arguments.undistort, remake=arguments.remake)
 
     # Transforms for the training, validation, and testing sets
     training_transforms, validation_transforms, testing_transforms = processing_functions.data_transforms()
