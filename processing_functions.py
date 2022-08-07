@@ -70,7 +70,6 @@ def process_image(image_path, hidden_size):
     # PyTorch expects the color channel to be the first dimension but it's the third dimension in the PIL image and Numpy array
     # Color channel needs to be first; retain the order of the other two dimensions.
     np_image = np_image.transpose((2, 0, 1))
-    
     return np_image
 
 

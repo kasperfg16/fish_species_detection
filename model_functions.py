@@ -8,6 +8,7 @@ from torchvision import models
 from collections import OrderedDict
 from workspace_utils import active_session
 
+
 # Function for saving the model checkpoint
 def save_checkpoint(model, training_dataset, arch, epochs, lr, hidden_units, input_size):
 
@@ -133,7 +134,6 @@ def test_accuracy(model, test_loader, device):
 # Train the classifier
 def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, validate_loader, device):
 
-    epochs = arg_epochs
     steps = 0
     print_every = 3
 
@@ -195,7 +195,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                         if arg_epochs == -1:
                             print("Epoch: {} ".format(epoch))
                         else:
-                            print("Epoch: {}/{}.. ".format(e+1, epochs))
+                            print("Epoch: {}/{}.. ".format(e+1, num_epochs))
 
                         print(
                             "Training Loss: {:.3f}.. ".format(running_loss/print_every),
@@ -203,6 +203,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                             "Validation Accuracy: {:.3f}".format(Val_acc))
 
                         running_loss = 0 
+                        model.train()
 
             # Do not run until model is 100% correct on validation set if a number of epocs is set
             if arg_epochs == -1:
@@ -229,6 +230,7 @@ def predict(image, model, hidden_size, device, topk=5):
         image = torch.from_numpy(image).type(torch.FloatTensor)
 
     print("Device used for classification: ", device)
+    model.eval()
     model.to(device)
 
     # Returns a new tensor with a dimension of size one inserted at the specified position.

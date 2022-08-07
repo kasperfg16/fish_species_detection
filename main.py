@@ -220,15 +220,20 @@ def isolate_fish(imgs, img_list_fish, display=False):
 
     # Threshold to create a mask for each image
     mask_cod, segmented_images = ftc.segment_codOPENCV(imgs)
-    mask_cod_CLAHE, img_segmented_cod_CLAHE = ftc.segment_cod_CLAHEOPENCV(CLAHE)
+    mask_cod_CLAHE, imgs_segmented_cod_CLAHE = ftc.segment_cod_CLAHEOPENCV(CLAHE)
 
     # CLAHE images
-    ftc.save_imgOPENCV(img_segmented_cod_CLAHE, 'fish_pics/output_images/', img_list_fish,
-                       "_openCV_MANUAL_INSPECTION_CLAHE")
+    ftc.save_imgOPENCV(
+        imgs_segmented_cod_CLAHE,
+        img_list_fish, path='fish_pics/output_images/',
+        img_tag="_openCV_MANUAL_INSPECTION_CLAHE")
 
     # CLAHE images
-    ftc.save_imgOPENCV(mask_cod, 'fish_pics/output_images/manual_inspection_CLAHE', img_list_fish,
-                       "_openCV_MANUAL_INSPECTION_CLAHE")
+    ftc.save_imgOPENCV(
+        mask_cod, 
+        img_list_fish, 
+        path='fish_pics/output_images/manual_inspection_CLAHE', 
+        img_tag="_openCV_MANUAL_INSPECTION_CLAHE")
 
     # Find the biggest contour
     count = 0
