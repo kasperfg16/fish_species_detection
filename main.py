@@ -422,7 +422,7 @@ def main(args=None):
     images, img_list_fish, img_list_abs_path = ftc.loadImages(edit_images=False, show_img=False)
 
     # Do we want to calibrate before undistorting the image?
-    if arguments.calibrate:
+    if arguments.calibrate_cam:
         calibrate_camera()
     else:
         # Undistorts images

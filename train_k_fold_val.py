@@ -1,4 +1,3 @@
-import sys
 from numpy import mean
 import torch
 import model_functions
@@ -10,6 +9,7 @@ from torchvision import models
 from collections import OrderedDict
 from torch import optim
 from torch import nn
+from main import calibrate_camera
 
 parser = argparse.ArgumentParser(description='Train Image Classifier')
 
@@ -32,6 +32,9 @@ arguments = parser.parse_args()
 
 acc_list = []
 undistorted = False
+
+if arguments.calibrate_cam:
+    calibrate_camera()
 
 for k in range(arguments.num_of_k):
     print('Number of k\'th iteration: ', k+1, 'of: ', arguments.num_of_k)
