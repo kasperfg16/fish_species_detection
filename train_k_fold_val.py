@@ -28,9 +28,6 @@ parser.add_argument('--batch_size_test_loader', type = int, default = 2, help = 
 parser.add_argument('--calibrate_cam', type = bool, default = False, help = 'Set to \'True\' to re-calibrate camera. Remember to put images of checkerboard in calibration_imgs folder')
 parser.add_argument('--undistort', type = bool, default = True, help = 'Set to False to not undistort images when training')
 parser.add_argument('--patience', type = int, default = 5, help = 'Patience: number of epochs to look for improvements triggering training stops')
-if len(sys.argv)==1:
-    parser.print_help(sys.stderr)
-    sys.exit(1)
 arguments = parser.parse_args()
 
 acc_list = []
