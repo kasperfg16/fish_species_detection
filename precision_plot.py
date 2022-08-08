@@ -6,6 +6,7 @@ import os
 
 def calc_len_est(img_list_abs_path, len_estimate_list):
     
+    print('Comparing lenght estimate with ground truth')
     img_num_list = []
     len_real_list = []
 
@@ -38,6 +39,7 @@ def calc_len_est(img_list_abs_path, len_estimate_list):
                 len_real_list.append(real_length)
                 continue
             elif img_number == number_photo + 1:
+                len_real_list.append(real_length)
                 continue
 
     # Have used this website for formulas: https://www.wikihow.com/Calculate-Precision
@@ -53,6 +55,7 @@ def calc_len_est(img_list_abs_path, len_estimate_list):
     for i in range(0, len_of_array-1):
         if abs_dev[i] > 15:
             remove_list.append(i)
+            print(remove_list)
 
     abs_dev = np.delete(abs_dev, remove_list)
     len_estimate_array = np.delete(len_estimate_array, remove_list)
@@ -115,7 +118,7 @@ def calc_len_est(img_list_abs_path, len_estimate_list):
     labels = labels[len(labels)-1:]
     ax1[0].legend(handles=handles, labels=labels, loc='upper left', shadow=True, fontsize='large')
 
-    textstr = 'Sample size: ' + len(avg_dev)
+    textstr = 'Sample size: ' + str(len(abs_dev))
     textstr = textstr + '\n' + 'Average deviation: \u00B1' + str(avg_dev) + ' cm'
     textstr = textstr + '\n' + 'Standard deviation: \u00B1' + str(std_dev) + ' cm'
     textstr = textstr + '\n' + 'Median deviation: \u00B1' + str(median) + ' cm'

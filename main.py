@@ -314,6 +314,7 @@ def parse_arguments():
     parser.add_argument('--device', type=str, default='cuda', help='\'cuda\' for GPU or \'cpu\' for CPU')
     parser.add_argument('--arUco_marker_cur', type=float, default=19.2, help='ArUco marker circumference')
     parser.add_argument('--calibrate_cam', type=bool, default=False, help='Set to \'True\' to re-calibrate camera. Remember to put images of checkerboard in calibration_imgs folder')
+    parser.add_argument('--undistorted', type=bool, default=True, help='Classify undistorted images')
 
     arguments = parser.parse_args()
 
@@ -419,20 +420,28 @@ def main(args=None):
     arguments = parse_arguments()
 
     # Load all the images
-    images, img_list_fish, img_list_abs_path = ftc.loadImages(edit_images=False, show_img=False)
+    if arguments.undistorted:
+        load_folder = '/fish_pics/undistorted/cods/'
+    else:
+        load_folder = '/fish_pics/input_images/cods/'
+    
+    images, img_list_fish, img_list_abs_path = ftc.loadImages(folder=load_folder, edit_images=False, show_img=False)
 
     # Do we want to calibrate before undistorting the image?
     if arguments.calibrate_cam:
         calibrate_camera()
     else:
-        # Undistorts images
-        dst = undistort_imgs(images)
+        if not arguments.undistorted:
+            # Undistorts images
+            dst = undistort_imgs(images)
+        else:
+            dst = images
 
         # Resize images for presentation
         resized = resize_img(dst, resizePercent, displayImages=False)
 
         # Isolate fish contours
-        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=True)
+        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
 
         # Load the prediction model
         checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.device)

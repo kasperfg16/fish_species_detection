@@ -353,6 +353,8 @@ def loadImages(folder='/fish_pics/input_images/cods/', edit_images=False, show_i
         :return: All the images in a list and its file names.
     """
 
+    print("Loading the images!")
+
     images = []
     img_names = []
     img_list_abs_path = []
@@ -506,4 +508,3 @@ def find_biggest_contour(imgs):
     Finds the biggest contour in an image.
     :return: The biggest contour
     '''
-
