@@ -75,9 +75,10 @@ def load_checkpoint(checkpoint_path, map_location):
     return model, checkpoint
 
 # Function for the training pass
-def train(model, train_loader, device, optimizer, criterion):
+def train(model, train_loader, device, optimizer, criterion, epoch):
     
     model.train()
+
     running_loss = 0
 
     for images, labels in iter(train_loader):
@@ -89,7 +90,9 @@ def train(model, train_loader, device, optimizer, criterion):
 
         # Forward and backward propagation
         output = model.forward(images)
+        torch.cuda.empty_cache()
         loss = criterion(output, labels)
+        writer.add_scalar("Loss/train", loss, epoch)
         loss.backward()
         optimizer.step()
 
@@ -187,6 +190,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     last_loss = 100
     trigger_times = 0
     best_acc = 0.0
+    epoch = 0
 
     # Run while 'ctrl+c' is not pressed
     try:
@@ -194,9 +198,11 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
         while not converged:
             for e in range(num_epochs):
 
+                epoch += 1
+
                 running_loss = 0
-                
-                running_loss = train(model, train_loader, device, optimizer, criterion)
+            
+                running_loss = train(model, train_loader, device, optimizer, criterion, epoch)
             
                 # Turn off gradients for validation, saves memory and computations
                 with torch.no_grad():
@@ -205,7 +211,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                 val_acc = accuracy/len(validate_loader)
 
                 if arg_epochs == -1:
-                    print("Epoch: {} ".format(e+1))
+                    print("Epoch: {} ".format(epoch))
                 else:
                     print("Epoch: {}/{}.. ".format(e+1, num_epochs))
 
@@ -216,6 +222,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                 
                 # Deep copy the model if it has the best validation accuracy
                 if val_acc > best_acc:
+                    print('New best validation accuracy')
                     best_acc = val_acc
                     best_model_wts = copy.deepcopy(model.state_dict())
 
@@ -234,7 +241,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                     trigger_times = 0
 
                 last_loss = validation_loss
-                torch.cuda.empty_cache()
+                
             if not arg_epochs == -1:
                 converged = True
 

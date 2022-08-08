@@ -38,7 +38,6 @@ def calc_len_est(img_list_abs_path, len_estimate_list):
                 len_real_list.append(real_length)
                 continue
             elif img_number == number_photo + 1:
-                len_real_list.append(real_length)
                 continue
 
     # Have used this website for formulas: https://www.wikihow.com/Calculate-Precision
@@ -116,7 +115,8 @@ def calc_len_est(img_list_abs_path, len_estimate_list):
     labels = labels[len(labels)-1:]
     ax1[0].legend(handles=handles, labels=labels, loc='upper left', shadow=True, fontsize='large')
 
-    textstr = 'Average deviation: \u00B1' + str(avg_dev) + ' cm'
+    textstr = 'Sample size: ' + len(avg_dev)
+    textstr = textstr + '\n' + 'Average deviation: \u00B1' + str(avg_dev) + ' cm'
     textstr = textstr + '\n' + 'Standard deviation: \u00B1' + str(std_dev) + ' cm'
     textstr = textstr + '\n' + 'Median deviation: \u00B1' + str(median) + ' cm'
     textstr = textstr + '\n' + 'Max error: \u00B1' + str(max_error) + ' cm'

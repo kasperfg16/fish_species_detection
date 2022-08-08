@@ -107,27 +107,37 @@ Repo for fish species detection project at Aalborg University
 
 ## How to use
 
-Go through **Setup**
+1. ### See all the arguments
 
-1. ### Calibrate camera
+    Go through **Setup**
+
+2. ### See all the arguments
+
+    E.g. for [train_k_fold_val.py](train_k_fold_val.py) run:
+
+    ``` bash
+    python train_k_fold_val.py --help
+    ```
+
+3. ### Calibrate camera
 
     Take images of checkerboard pattern (6x9) with the camera that you want to calibrate and save images in [calibration_imgs](calibration_imgs) folder. [Checkerboard pattern (6x9)](https://github.com/opencv/opencv/blob/4.x/doc/pattern.png)
 
-    When running [train_k_fold_val.py](train_k_fold_val.py) use the undistort argument like so: `python .\train_k_fold_val.py --calibrate_cam=True`
+    When running [train_k_fold_val.py](train_k_fold_val.py) use the undistort argument like so: `python .\train_k_fold_val.py --calibrate_cam True`
 
-    The same can be done with `python .\main.py --calibrate_cam=True`
+    The same can be done with `python .\main.py --calibrate_cam True`
 
-1. ### Train the model
+4. ### Train the model
 
     To train the model put images into [fish_pics\input_images](fish_pics\input_images)
 
     To add another class, create a new folder inside [fish_pics\input_images](fish_pics\input_images) and upload images of this new class into this folder. E.g **fish_pics\input_images\tortiose**
 
-    Then run [train.py](train.py)
+    Then run [train_k_fold_val.py](train_k_fold_val.py) like so: `python .\main.py --num_of_k 1`
 
     To stop the training press ctrl+c **ONCE**. This will stop the training at the point where it is and save the model.
 
-2. ### K-fold validation
+5. ### K-fold validation
 
     Run [train_k_fold_val.py](train_k_fold_val.py)
 
@@ -139,15 +149,9 @@ Go through **Setup**
 
     ``` bash
     Run python train_k_fold_val.py --epocs = <number of epocs that you want>
-    ```
+    `
 
-    To see the rest of the arguments run:
-
-    ``` bash
-    Run `python train_k_fold_val.py --help`
-    ```
-
-3. ### To run main code
+6. ### Run main code
 
     Run [main.py](main.py)
 
