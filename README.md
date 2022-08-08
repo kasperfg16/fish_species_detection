@@ -109,6 +109,14 @@ Repo for fish species detection project at Aalborg University
 
 Go through **Setup**
 
+1. ### Calibrate camera
+
+    Take images of checkerboard pattern (6x9) with the camera that you want to calibrate and save images in [calibration_imgs](calibration_imgs) folder. [Checkerboard pattern (6x9)](https://github.com/opencv/opencv/blob/4.x/doc/pattern.png)
+
+    When running [train_k_fold_val.py](train_k_fold_val.py) use the undistort argument like so: `python .\train_k_fold_val.py --calibrate_cam=True`
+
+    The same can be done with `python .\main.py --calibrate_cam=True`
+
 1. ### Train the model
 
     To train the model put images into [fish_pics\input_images](fish_pics\input_images)
@@ -136,7 +144,7 @@ Go through **Setup**
     To see the rest of the arguments run:
 
     ``` bash
-    Run python train_k_fold_val.py help
+    Run `python train_k_fold_val.py --help`
     ```
 
 3. ### To run main code
