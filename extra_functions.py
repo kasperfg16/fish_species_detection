@@ -7,27 +7,50 @@ import functions_openCV as ftc
 
 from main import undistort_imgs
 
-def make_data_sets(percent_train=80, undistort=False, remake=False):
+def make_data_sets(percent_train=80, undistort=False, load_folder='/fish_pics/input_images/'):
     '''
     # Divide images into train, test, and validation folders:
     '''
+    print('Making data set')
 
     # Find path to folder where "train.py" python file is
     basedir = os.path.dirname(os.path.abspath(__file__))
-    path_img_folder = '/fish_pics/input_images/'
-    img_folder_path = basedir + path_img_folder
+    name_img_folder = load_folder
+    path_img_folder = basedir + name_img_folder
+
+    if undistort:
+        
+        # Make path to folder where undistorted images are saved
+        name_u_img_folder = '/fish_pics/undistorted/'
+        path_u_img_folder = basedir + name_u_img_folder
+        
+        subfolders = next(os.walk(path_img_folder))[1]
+
+        for subfolder in subfolders:
+            
+            load_folder = os.path.join(path_img_folder, subfolder)
+            images, img_names, img_list_abs_path = ftc.loadImages(folder=load_folder, edit_images=False, show_img=False, full_path=True)
+
+            dst = undistort_imgs(images)
+
+            save_folder = os.path.join(path_u_img_folder, subfolder)
+            if not os.path.exists(save_folder):
+                os.makedirs(save_folder)
+
+            ftc.save_imgOPENCV(imgs=dst, path=save_folder, originPathNameList=img_names)
+
+        path_img_folder = path_u_img_folder
 
     # Location of dataset
     data_dir = '/data_set'
     data_dir_path = basedir + data_dir
 
     # Remove old dataset if requested
-    if remake:
-        if os.path.exists(data_dir_path):
-            shutil.rmtree(data_dir_path)
+    if os.path.exists(data_dir_path):
+        shutil.rmtree(data_dir_path)
 
-    # Find subfolders in /fish_pics/input_images/
-    subfolders = next(os.walk(img_folder_path))[1]
+    # Find subfolders in path_img_folder
+    subfolders = next(os.walk(path_img_folder))[1]
 
     num_classes = len(subfolders)
     print("Number of classes: ", num_classes)
@@ -37,7 +60,7 @@ def make_data_sets(percent_train=80, undistort=False, remake=False):
     # For each subfolder, devide into train and test with given percentage.
     # Also create a JSON file with class labels
     for subfolder in subfolders:
-        imgs_subfolder_path = img_folder_path + subfolder
+        imgs_subfolder_path = path_img_folder + subfolder
         abs_path = os.path.abspath(imgs_subfolder_path)
         images = os.listdir(abs_path)
 
@@ -95,23 +118,6 @@ def make_data_sets(percent_train=80, undistort=False, remake=False):
     folder_name = "test"
     test_dir = os.path.join(data_dir_path, folder_name)
 
-    # Undistort the images that were just put into the test and train folders
-    if undistort:
-        
-        dir_list = [test_dir, train_dir]
-
-        for folder in dir_list:
-            train_sub_dirs = next(os.walk(folder))[1]
-            
-            for subfolder in train_sub_dirs:
-                load_folder = os.path.join(folder, subfolder)
-                images, img_names, img_list_abs_path = ftc.loadImages(folder=load_folder, edit_images=False, show_img=False, full_path=True)
-                dst = undistort_imgs(images)
-                
-                save_folder = os.path.join(folder, subfolder)
-                ftc.save_imgOPENCV(imgs=dst, path=save_folder, originPathNameList=img_names)
-
-
     # Create a validation folder
     folder_name = "validation"
 
@@ -119,4 +125,5 @@ def make_data_sets(percent_train=80, undistort=False, remake=False):
     valid_dir = os.path.join(data_dir_path, folder_name)
     shutil.copytree(source_dir, valid_dir)
 
+    print('Done making data set')
     return num_classes, train_dir, valid_dir, test_dir

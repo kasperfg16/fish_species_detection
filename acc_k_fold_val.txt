@@ -1,2 +1,2 @@
-acc_list = [tensor(0.8421)]
-mean_acc = 0.84210527
+acc_list = [tensor(0.8462)]
+mean_acc = 0.84615386

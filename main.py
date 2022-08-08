@@ -313,7 +313,7 @@ def parse_arguments():
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
     parser.add_argument('--device', type=str, default='cuda', help='\'cuda\' for GPU or \'cpu\' for CPU')
     parser.add_argument('--arUco_marker_cur', type=float, default=19.2, help='ArUco marker circumference')
-    parser.add_argument('--calibrate', type=bool, default=False, help='Set to "True" if you want to calibrate')
+    parser.add_argument('--calibrate_cam', type=bool, default=False, help='Set to \'True\' to re-calibrate camera. Remember to put images of checkerboard in calibration_imgs folder')
 
     arguments = parser.parse_args()
 

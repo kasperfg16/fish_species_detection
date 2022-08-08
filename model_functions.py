@@ -1,5 +1,8 @@
+import copy
 import json
 import os, os.path
+from statistics import mean
+import time
 import torch
 import processing_functions
 from torch import nn
@@ -71,10 +74,35 @@ def load_checkpoint(checkpoint_path, map_location):
     
     return model, checkpoint
 
+# Function for the training pass
+def train(model, train_loader, device, optimizer, criterion):
+    
+    model.train()
+    running_loss = 0
+
+    for images, labels in iter(train_loader):
+
+        images, labels = images.to(device), labels.to(device)
+
+        # Zero the gradients
+        optimizer.zero_grad()
+
+        # Forward and backward propagation
+        output = model.forward(images)
+        loss = criterion(output, labels)
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
+    
+    return running_loss
+
 
 # Function for the validation pass
 def validation(model, validateloader, criterion, device):
     
+    model.eval()
+
     val_loss = 0
     accuracy = 0
     
@@ -129,13 +157,13 @@ def test_accuracy(model, test_loader, device):
 
         acc = accuracy/len(test_loader)
     return acc
-        
 
 # Train the classifier
-def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, validate_loader, device):
+def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, validate_loader, device, patience):
 
-    steps = 0
-    print_every = 3
+    print('Training classifier')
+
+    best_model_wts = copy.deepcopy(model.state_dict())
 
     if device == 'cuda':
         if not torch.cuda.is_available():
@@ -155,62 +183,66 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     else:
         num_epochs = 1
 
-    Val_acc = 0
-    epoch = 0
+    converged = False
+    last_loss = 100
+    trigger_times = 0
+    best_acc = 0.0
 
     # Run while 'ctrl+c' is not pressed
     try:
-        # Either run until validation accuracy is 100% or until specified epoch number is reached.
-        while not Val_acc == 1:
+        # Either run until converged or until specified epoch number is reached.
+        while not converged:
             for e in range(num_epochs):
-                epoch = epoch + 1
-                model.train()
 
                 running_loss = 0
-
-                for images, labels in iter(train_loader):
-            
-                    steps += 1
-            
-                    images, labels = images.to(device), labels.to(device)
-            
-                    optimizer.zero_grad()
-            
-                    output = model.forward(images)
-                    loss = criterion(output, labels)
-                    loss.backward()
-                    optimizer.step()
-            
-                    running_loss += loss.item()
-            
-                    if steps % print_every == 0:
-                    
-                        model.eval()
-                    
-                        # Turn off gradients for validation, saves memory and computations
-                        with torch.no_grad():
-                            validation_loss, accuracy = validation(model, validate_loader, criterion, device)
                 
-                        Val_acc = accuracy/len(validate_loader)
-                        if arg_epochs == -1:
-                            print("Epoch: {} ".format(epoch))
-                        else:
-                            print("Epoch: {}/{}.. ".format(e+1, num_epochs))
+                running_loss = train(model, train_loader, device, optimizer, criterion)
+            
+                # Turn off gradients for validation, saves memory and computations
+                with torch.no_grad():
+                    validation_loss, accuracy = validation(model, validate_loader, criterion, device)
+        
+                val_acc = accuracy/len(validate_loader)
 
-                        print(
-                            "Training Loss: {:.3f}.. ".format(running_loss/print_every),
-                            "Validation Loss: {:.3f}.. ".format(validation_loss/len(validate_loader)),
-                            "Validation Accuracy: {:.3f}".format(Val_acc))
+                if arg_epochs == -1:
+                    print("Epoch: {} ".format(e+1))
+                else:
+                    print("Epoch: {}/{}.. ".format(e+1, num_epochs))
 
-                        running_loss = 0 
-                        model.train()
+                print(
+                    "Training Loss: {:.3f}.. ".format(running_loss/len(train_loader)),
+                    "Validation Loss: {:.3f}.. ".format(validation_loss/len(validate_loader)),
+                    "Validation Accuracy: {:.3f}".format(val_acc))
+                
+                # Deep copy the model if it has the best validation accuracy
+                if val_acc > best_acc:
+                    best_acc = val_acc
+                    best_model_wts = copy.deepcopy(model.state_dict())
 
-            # Do not run until model is 100% correct on validation set if a number of epocs is set
-            if arg_epochs == -1:
-                Val_acc = 1
+                # Early stopping
+                if validation_loss > last_loss:
+                    trigger_times += 1
+                    print('Trigger Times:', trigger_times, 'out of ', patience)
 
+                    if trigger_times >= patience:
+                        print('Early stopping!')
+                        converged = True
+                        break
+                elif trigger_times > 0:
+                    print('Trigger times reset')
+                    print('Trigger times: 0')
+                    trigger_times = 0
+
+                last_loss = validation_loss
+
+            if not arg_epochs == -1:
+                converged = True
+
+        # When done, load the best model with highest validation accuracy
+        model.load_state_dict(best_model_wts)
     except KeyboardInterrupt:
-                pass
+        model.load_state_dict(best_model_wts)
+        pass
                     
 def predict(image, model, hidden_size, device, topk=5):
     ''' Predict the class (or classes) of an image using a trained deep learning model.

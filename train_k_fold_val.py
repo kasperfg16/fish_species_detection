@@ -1,8 +1,6 @@
-from ast import arg
+import sys
 from numpy import mean
-from pandas import array
 import torch
-from main import undistort_imgs
 import model_functions
 import processing_functions
 import argparse
@@ -12,7 +10,6 @@ from torchvision import models
 from collections import OrderedDict
 from torch import optim
 from torch import nn
-from unittest import case
 
 parser = argparse.ArgumentParser(description='Train Image Classifier')
 
@@ -20,25 +17,36 @@ parser = argparse.ArgumentParser(description='Train Image Classifier')
 parser.add_argument('--arch', type = str, default = 'vgg', help = 'NN Model Architecture')
 parser.add_argument('--learning_rate', type = float, default = 0.001, help = 'Learning Rate')
 parser.add_argument('--hidden_units', type = int, default = 9400, help = 'Neurons in the Hidden Layer')
-parser.add_argument('--epochs', type = int, default = 5, help = 'Epochs. If epochs = -1 the training will run until the validation accuracy is = 100%')
+parser.add_argument('--epochs', type = int, default = -1, help = 'Epochs. If epochs = -1 the training will run until convergence (When )')
 parser.add_argument('--gpu', type = str, default = 'cuda', help = 'GPU or CPU')
 parser.add_argument('--save_dir', type = str, default = 'checkpoint.pth', help = 'Path to checkpoint')
-parser.add_argument('--percent_train', type = int, default = 80, help = 'How much of the data set should be used for training ((How much is used for testing) = 100% - percent_train)')
-parser.add_argument('--num_of_k', type = int, default = 1, help = 'How many k\'s in k-fold validation')
-parser.add_argument('--batch_size_train_loader', type = int, default = 3, help = 'Batch size for train_loader when training neural network')
-parser.add_argument('--batch_size_validate_loader', type = int, default = 3, help = 'Batch size for validate_loader when training neural network')
-parser.add_argument('--batch_size_test_loader', type = int, default = 3, help = 'Batch size for test_loader when training neural network')
-parser.add_argument('--remake', type = bool, default = True, help = 'Remake data set (Use if training must be done with more or different images in the folder /input_images)')
-parser.add_argument('--undistort', type = bool, default = True, help = 'set to False to not undistort images when training')
-
+parser.add_argument('--percent_train', type = int, default = 80, help = 'How much of the data set should be used for training ((How much is used for testing) = 100 - percent_train)')
+parser.add_argument('--num_of_k', type = int, default = 10, help = 'How many ks in k-fold validation')
+parser.add_argument('--batch_size_train_loader', type = int, default = 2, help = 'Batch size for train_loader when training neural network')
+parser.add_argument('--batch_size_validate_loader', type = int, default = 2, help = 'Batch size for validate_loader when training neural network')
+parser.add_argument('--batch_size_test_loader', type = int, default = 2, help = 'Batch size for test_loader when training neural network')
+parser.add_argument('--calibrate_cam', type = bool, default = False, help = 'Set to \'True\' to re-calibrate camera. Remember to put images of checkerboard in calibration_imgs folder')
+parser.add_argument('--undistort', type = bool, default = True, help = 'Set to False to not undistort images when training')
+parser.add_argument('--patience', type = int, default = 5, help = 'Patience: number of epochs to look for improvements triggering training stops')
+if len(sys.argv)==1:
+    parser.print_help(sys.stderr)
+    sys.exit(1)
 arguments = parser.parse_args()
 
 acc_list = []
+undistorted = False
 
 for k in range(arguments.num_of_k):
-    print('Number of k\'th iteration: ', k, 'of: ', arguments.num_of_k)
+    print('Number of k\'th iteration: ', k+1, 'of: ', arguments.num_of_k)
 
-    num_classes, train_dir, valid_dir, test_dir = ef.make_data_sets(arguments.percent_train, arguments.undistort, remake=arguments.remake)
+    # Make dataset and undistort if requested and not already done
+    if arguments.undistort and not undistorted:
+        num_classes, train_dir, valid_dir, test_dir = ef.make_data_sets(arguments.percent_train, arguments.undistort)
+        undistorted = True
+    elif arguments.undistort and undistorted:
+        num_classes, train_dir, valid_dir, test_dir = ef.make_data_sets(arguments.percent_train, load_folder='/fish_pics/undistorted/')
+    else:
+        num_classes, train_dir, valid_dir, test_dir = ef.make_data_sets(arguments.percent_train)
 
     # Transforms for the training, validation, and testing sets
     training_transforms, validation_transforms, testing_transforms = processing_functions.data_transforms()
@@ -59,7 +67,7 @@ for k in range(arguments.num_of_k):
         input_size = 9216
         model = models.alexnet(weights = AlexNet_Weights.IMAGENET1K_V1)
         
-    print(model)
+    print('Model architecture: \n', model)
 
     # Freeze pretrained model parameters to avoid backpropogating through them
     for parameter in model.parameters():
@@ -80,7 +88,7 @@ for k in range(arguments.num_of_k):
     # Gradient descent optimizer
     optimizer = optim.Adam(model.classifier.parameters(), lr=arguments.learning_rate)
         
-    model_functions.train_classifier(model, optimizer, criterion, arguments.epochs, train_loader, validate_loader, arguments.gpu)
+    model_functions.train_classifier(model, optimizer, criterion, arguments.epochs, train_loader, validate_loader, arguments.gpu, arguments.patience)
 
     acc = model_functions.test_accuracy(model, test_loader, arguments.gpu)
 

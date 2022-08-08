@@ -134,3 +134,4 @@ fish_pics/input_images/cods/
 data_set/test/cod/
 fish_pics/output_images/
 acc_k_fold_val.txt
+\undistorted
