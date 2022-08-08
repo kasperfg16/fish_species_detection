@@ -406,6 +406,7 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
 
         cv2.imshow("Picture: " + str(fish_names[count]), n)
         cv2.waitKey(0)
+        cv2.destroyWindow("Picture: " + str(fish_names[count]))
 
         len_estimate.append(w_cm)
         
