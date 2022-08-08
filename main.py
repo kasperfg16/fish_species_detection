@@ -9,6 +9,7 @@ import functions_openCV as ftc
 from functions_openCV import claheHSL
 import precision_plot as pp
 
+# Global variables
 displayCorners = False
 init_cali = True
 init_load_model = True
@@ -262,7 +263,7 @@ def isolate_fish(imgs, img_list_fish, display=False):
         biggestConList = sorted(fishContours, key=cv2.contourArea, reverse= True)
 
         # Find the closest contour to the middle, only check the biggest contours
-        for cont in biggestConList:
+        for cont in biggestConList[:5]:
             contMiddle = get_contour_middle(cont)
             distance = distance_between_points((w//2, h//2), contMiddle)
             cv2.line(copy, contMiddle, (w // 2, h // 2), (0, 255, 0), thickness=2)
@@ -320,7 +321,7 @@ def parse_arguments():
     return arguments
 
 
-def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, prediction):
+def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, arguments, prediction):
 
     """
     Uses an ArUco marker to calibrate and predict the fish size.
@@ -403,7 +404,7 @@ def load_ArUco_cali_objectsize_and_display(imgs, fishContours, arguments, predic
         cv2.putText(n, "Species: {}".format(prediction[count], 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 2,
                     (100, 200, 0), 2)
 
-        cv2.imshow("size", n)
+        cv2.imshow("Picture: " + str(fish_names[count]), n)
         cv2.waitKey(0)
 
         len_estimate.append(w_cm)
@@ -432,7 +433,7 @@ def main(args=None):
         resized = resize_img(dst, resizePercent, displayImages=False)
 
         # Isolate fish contours
-        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
+        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=True)
 
         # Load the prediction model
         checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.device)
@@ -442,10 +443,11 @@ def main(args=None):
                                             device)
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
-        len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, contoursFish, arguments, predictions)
+        len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
 
         # Precision calculation
         pp.calc_len_est(img_list_abs_path, len_estimate)
+
 
 if __name__ == '__main__':
     main()
