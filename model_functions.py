@@ -234,7 +234,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                     trigger_times = 0
 
                 last_loss = validation_loss
-
+                torch.cuda.empty_cache()
             if not arg_epochs == -1:
                 converged = True
 

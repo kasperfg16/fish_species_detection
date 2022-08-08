@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Train Image Classifier')
 parser.add_argument('--arch', type = str, default = 'vgg', help = 'NN Model Architecture')
 parser.add_argument('--learning_rate', type = float, default = 0.001, help = 'Learning Rate')
 parser.add_argument('--hidden_units', type = int, default = 9400, help = 'Neurons in the Hidden Layer')
-parser.add_argument('--epochs', type = int, default = -1, help = 'Epochs. If epochs = -1 the training will run until convergence (When )')
+parser.add_argument('--epochs', type = int, default = -1, help = 'Epochs. If epochs = -1 the training will run until convergence (When validation loss is not improving)')
 parser.add_argument('--gpu', type = str, default = 'cuda', help = 'GPU or CPU')
 parser.add_argument('--save_dir', type = str, default = 'checkpoint.pth', help = 'Path to checkpoint')
 parser.add_argument('--percent_train', type = int, default = 80, help = 'How much of the data set should be used for training ((How much is used for testing) = 100 - percent_train)')
@@ -27,7 +27,7 @@ parser.add_argument('--batch_size_validate_loader', type = int, default = 2, hel
 parser.add_argument('--batch_size_test_loader', type = int, default = 2, help = 'Batch size for test_loader when training neural network')
 parser.add_argument('--calibrate_cam', type = bool, default = False, help = 'Set to \'True\' to re-calibrate camera. Remember to put images of checkerboard in calibration_imgs folder')
 parser.add_argument('--undistort', type = bool, default = True, help = 'Set to False to not undistort images when training')
-parser.add_argument('--patience', type = int, default = 5, help = 'Patience: number of epochs to look for improvements triggering training stops')
+parser.add_argument('--patience', type = int, default = 5, help = 'Patience: number of epochs to look for improvements in validation loss triggering training stops')
 arguments = parser.parse_args()
 
 acc_list = []
