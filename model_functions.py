@@ -32,7 +32,7 @@ class EarlyStopping():
             print('Trigger Times:', self.counter, 'out of ', self.patience)
 
 # Function for saving the model checkpoint
-def save_checkpoint(model, training_dataset, arch, epochs, lr, hidden_units, input_size):
+def save_checkpoint(model, training_dataset, arch, epochs, lr, hidden_units, input_size, k):
 
     model.class_to_idx = training_dataset.class_to_idx
 
@@ -47,7 +47,7 @@ def save_checkpoint(model, training_dataset, arch, epochs, lr, hidden_units, inp
                   'class_to_idx': model.class_to_idx,
                   'clf_input': input_size}
 
-    torch.save(checkpoint, 'checkpoint.pth')
+    torch.save(checkpoint, 'checkpoint' + k + '.pth')
     
 # Function for loading the model checkpoint    
 def load_checkpoint(checkpoint_path, map_location):

@@ -97,7 +97,7 @@ for k in range(arguments.num_of_k):
 
     acc = model_functions.test_accuracy(model, test_loader, arguments.gpu)
 
-    model_functions.save_checkpoint(model, training_dataset, arguments.arch, arguments.epochs, arguments.learning_rate, arguments.hidden_units, input_size)
+    model_functions.save_checkpoint(model, training_dataset, arguments.arch, arguments.epochs, arguments.learning_rate, arguments.hidden_units, input_size, k+1)
 
     acc_list.append(acc)
     print('acc_list', acc_list)
