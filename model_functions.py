@@ -47,7 +47,7 @@ def save_checkpoint(model, training_dataset, arch, epochs, lr, hidden_units, inp
                   'class_to_idx': model.class_to_idx,
                   'clf_input': input_size}
 
-    torch.save(checkpoint, 'checkpoint' + k + '.pth')
+    torch.save(checkpoint, 'checkpoint' + str(k) + '.pth')
     
 # Function for loading the model checkpoint    
 def load_checkpoint(checkpoint_path, map_location):
