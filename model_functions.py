@@ -214,7 +214,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     best_acc = 0.0
     epoch = 0
     early_stopping = EarlyStopping(patience=patience, min_delta_percent=10)
-    writer = SummaryWriter(comment=str(k) + '_k_of' + str(num_k) + '_k_')
+    writer = SummaryWriter(comment='_' + str(k) + '_k_of_' + str(num_k) + '_k')
 
     # Run while 'ctrl+c' is not pressed
     try:
