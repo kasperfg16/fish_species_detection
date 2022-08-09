@@ -107,11 +107,9 @@ Repo for fish species detection project at Aalborg University
 
 ## How to use
 
-1. ### See all the arguments
+- ### Go through **Setup**
 
-    Go through **Setup**
-
-2. ### See all the arguments
+- ### See all the arguments
 
     E.g. for [train_k_fold_val.py](train_k_fold_val.py) run:
 
@@ -119,7 +117,7 @@ Repo for fish species detection project at Aalborg University
     python train_k_fold_val.py --help
     ```
 
-3. ### Calibrate camera
+- ### Calibrate camera
 
     Take images of checkerboard pattern (6x9) with the camera that you want to calibrate and save images in [calibration_imgs](calibration_imgs) folder. [Checkerboard pattern (6x9)](https://github.com/opencv/opencv/blob/4.x/doc/pattern.png)
 
@@ -127,7 +125,7 @@ Repo for fish species detection project at Aalborg University
 
     The same can be done with `python .\main.py --calibrate_cam True`
 
-4. ### Train the model
+- ### Train the model
 
     To train the model put images into [fish_pics\input_images](fish_pics\input_images)
 
@@ -137,23 +135,43 @@ Repo for fish species detection project at Aalborg University
 
     To stop the training press ctrl+c **ONCE**. This will stop the training at the point where it is and save the model.
 
-5. ### K-fold validation
+- ### K-fold validation
 
     Run [train_k_fold_val.py](train_k_fold_val.py)
 
-    NOTE: The number of k's is set to default of 5. To change this run:
+    The number of k's is set to default of 5. To change this run:
 
     ``` bash
-    Run python train_k_fold_val.py --num_of_k = <number of k that you want>
+    python train_k_fold_val.py --num_of_k = <number of k that you want>
     ```
 
-    ``` bash
-    Run python train_k_fold_val.py --epocs = <number of epocs that you want>
-    `
+    The number of epochs can also be changed:
 
-6. ### Run main code
+    ``` bash
+    python train_k_fold_val.py --epocs = <number of epocs that you want>
+    ```
+
+    To use tensorboard to see progress run:
+
+    ``` bash
+    tensorboard --logdir=runs
+    ```
+
+    Then go to [http://localhost:6006/](http://localhost:6006/)
+
+- ### Run main code
 
     Run [main.py](main.py)
+
+    This script does the following:
+
+  - Calibrates camera and undistorts images
+
+  - Estimates lenght of fish
+  
+  - Plots results from estimation
+
+  - Classifies fish
 
 ## Train your own classifier on your own dataset with google colab
 

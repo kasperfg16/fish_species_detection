@@ -1,16 +1,36 @@
 import copy
 import json
 import os, os.path
-from statistics import mean
-import time
 import torch
 import processing_functions
 from torch import nn
 from torchvision.models import VGG16_Weights, AlexNet_Weights
 from torchvision import models
 from collections import OrderedDict
-from workspace_utils import active_session
+from torch.utils.tensorboard import SummaryWriter
 
+# Function for saving the model checkpoint
+class EarlyStopping():
+    def __init__(self, patience=5, min_delta_percent=0):
+
+        self.patience = patience
+        self.min_delta_percent = min_delta_percent
+        self.counter = 0
+        self.early_stop = False
+
+    def __call__(self, train_loss, validation_loss):
+        percent = (validation_loss-train_loss)/validation_loss*100
+        print('percent', percent)
+        if percent > self.min_delta_percent:
+            self.counter +=1
+            print('Trigger Times:', self.counter, 'out of ', self.patience)
+            if self.counter >= self.patience:
+                print('Early stopping!')
+                self.early_stop = True
+        elif self.counter > 0:
+            print('Trigger times reset')
+            self.counter = 0
+            print('Trigger Times:', self.counter, 'out of ', self.patience)
 
 # Function for saving the model checkpoint
 def save_checkpoint(model, training_dataset, arch, epochs, lr, hidden_units, input_size):
@@ -75,11 +95,12 @@ def load_checkpoint(checkpoint_path, map_location):
     return model, checkpoint
 
 # Function for the training pass
-def train(model, train_loader, device, optimizer, criterion, epoch):
+def train(model, train_loader, device, optimizer, criterion):
     
     model.train()
 
     running_loss = 0
+    accuracy = 0
 
     for images, labels in iter(train_loader):
 
@@ -92,13 +113,17 @@ def train(model, train_loader, device, optimizer, criterion, epoch):
         output = model.forward(images)
         torch.cuda.empty_cache()
         loss = criterion(output, labels)
-        writer.add_scalar("Loss/train", loss, epoch)
         loss.backward()
         optimizer.step()
 
         running_loss += loss.item()
+
+        probabilities = torch.exp(output)
+        
+        equality = (labels.data == probabilities.max(dim=1)[1])
+        accuracy += equality.type(torch.FloatTensor).mean()
     
-    return running_loss
+    return running_loss, accuracy
 
 
 # Function for the validation pass
@@ -162,7 +187,7 @@ def test_accuracy(model, test_loader, device):
     return acc
 
 # Train the classifier
-def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, validate_loader, device, patience):
+def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, validate_loader, device, patience, k, num_k):
 
     print('Training classifier')
 
@@ -187,10 +212,10 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
         num_epochs = 1
 
     converged = False
-    last_loss = 100
-    trigger_times = 0
     best_acc = 0.0
     epoch = 0
+    early_stopping = EarlyStopping(patience=patience, min_delta_percent=10)
+    writer = SummaryWriter(comment=str(k) + '_k_of' + str(num_k) + '_k_')
 
     # Run while 'ctrl+c' is not pressed
     try:
@@ -199,26 +224,29 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
             for e in range(num_epochs):
 
                 epoch += 1
-
-                running_loss = 0
             
-                running_loss = train(model, train_loader, device, optimizer, criterion, epoch)
+                running_train_loss, running_train_accuracy = train(model, train_loader, device, optimizer, criterion)
             
                 # Turn off gradients for validation, saves memory and computations
                 with torch.no_grad():
-                    validation_loss, accuracy = validation(model, validate_loader, criterion, device)
-        
-                val_acc = accuracy/len(validate_loader)
+                    running_validation_loss, running_val_accuracy = validation(model, validate_loader, criterion, device)
 
                 if arg_epochs == -1:
                     print("Epoch: {} ".format(epoch))
                 else:
                     print("Epoch: {}/{}.. ".format(e+1, num_epochs))
 
+                training_loss = running_train_loss/len(train_loader)
+                train_acc = running_train_accuracy/len(train_loader)
+
+                validation_loss = running_validation_loss/len(validate_loader)
+                val_acc = running_val_accuracy/len(validate_loader)
+            
                 print(
-                    "Training Loss: {:.3f}.. ".format(running_loss/len(train_loader)),
-                    "Validation Loss: {:.3f}.. ".format(validation_loss/len(validate_loader)),
-                    "Validation Accuracy: {:.3f}".format(val_acc))
+                    "Training Loss: {:.3f}.. ".format(training_loss),
+                    "Validation Loss: {:.3f}.. ".format(validation_loss),
+                    "Training Accuracy: {:.3f}.. ".format(train_acc),
+                    "Validation Accuracy: {:.3f}.. ".format(val_acc))
                 
                 # Deep copy the model if it has the best validation accuracy
                 if val_acc > best_acc:
@@ -227,29 +255,28 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                     best_model_wts = copy.deepcopy(model.state_dict())
 
                 # Early stopping
-                if validation_loss > last_loss:
-                    trigger_times += 1
-                    print('Trigger Times:', trigger_times, 'out of ', patience)
+                early_stopping(training_loss, validation_loss)
+                if early_stopping.early_stop:
+                    converged = True
+                    break
 
-                    if trigger_times >= patience:
-                        print('Early stopping!')
-                        converged = True
-                        break
-                elif trigger_times > 0:
-                    print('Trigger times reset')
-                    print('Trigger times: 0')
-                    trigger_times = 0
-
-                last_loss = validation_loss
+                # Summary writer tensorboard
+                writer.add_scalar('Loss/train', training_loss, epoch)
+                writer.add_scalar('Loss/validation', validation_loss, epoch)
+                writer.add_scalar('Accuracy/train', train_acc, epoch)
+                writer.add_scalar('Accuracy/validation', val_acc, epoch)
+                writer.flush()
                 
             if not arg_epochs == -1:
                 converged = True
 
         # When done, load the best model with highest validation accuracy
         model.load_state_dict(best_model_wts)
+        return writer
+        
     except KeyboardInterrupt:
         model.load_state_dict(best_model_wts)
-        pass
+        return writer
                     
 def predict(image, model, hidden_size, device, topk=5):
     ''' Predict the class (or classes) of an image using a trained deep learning model.

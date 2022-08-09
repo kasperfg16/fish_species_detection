@@ -38,6 +38,7 @@ if arguments.calibrate_cam:
     calibrate_camera()
 
 for k in range(arguments.num_of_k):
+
     print('Number of k\'th iteration: ', k+1, 'of: ', arguments.num_of_k)
 
     # Make dataset and undistort if requested and not already done
@@ -91,7 +92,8 @@ for k in range(arguments.num_of_k):
     # Gradient descent optimizer
     optimizer = optim.Adam(model.classifier.parameters(), lr=arguments.learning_rate)
         
-    model_functions.train_classifier(model, optimizer, criterion, arguments.epochs, train_loader, validate_loader, arguments.gpu, arguments.patience)
+    writer = model_functions.train_classifier(model, optimizer, criterion, arguments.epochs, train_loader, validate_loader, arguments.gpu, arguments.patience, k+1, arguments.num_of_k)
+    writer.close()
 
     acc = model_functions.test_accuracy(model, test_loader, arguments.gpu)
 
