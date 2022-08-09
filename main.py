@@ -9,6 +9,7 @@ import functions_openCV as ftc
 from functions_openCV import claheHSL
 import precision_plot as pp
 
+# Global variables
 displayCorners = False
 init_cali = True
 init_load_model = True
@@ -293,7 +294,7 @@ def isolate_fish(imgs, img_list_fish, display=False):
 
         count = count + 1
 
-    return isolated_fish, conlistReturn
+    return isolated_fish, conlistReturn, mask_cod
 
 
 def parse_arguments():
@@ -313,8 +314,9 @@ def parse_arguments():
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
     parser.add_argument('--device', type=str, default='cuda', help='\'cuda\' for GPU or \'cpu\' for CPU')
     parser.add_argument('--arUco_marker_cur', type=float, default=19.2, help='ArUco marker circumference')
-    parser.add_argument('--calibrate_cam', type=bool, default=False, help='Set to \'True\' to re-calibrate camera. Remember to put images of checkerboard in calibration_imgs folder')
-    parser.add_argument('--undistorted', type=bool, default=True, help='Classify undistorted images')
+    parser.add_argument('--calibrate_cam', type=bool, default=False, help='Set to \'True\' to re-calibrate camera. '
+                        'Remember to put images of checkerboard in calibration_imgs folder')
+    parser.add_argument('--undistorted', type=bool, default=False, help='Classify undistorted images')
 
     arguments = parser.parse_args()
 
@@ -442,7 +444,7 @@ def main(args=None):
         resized = resize_img(dst, resizePercent, displayImages=False)
 
         # Isolate fish contours
-        isolatedFish, contoursFish = isolate_fish(resized, img_list_fish, display=False)
+        isolatedFish, contoursFish, cod_masks = isolate_fish(resized, img_list_fish, display=False)
 
         # Load the prediction model
         checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.device)
