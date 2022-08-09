@@ -20,7 +20,6 @@ class EarlyStopping():
 
     def __call__(self, train_loss, validation_loss):
         percent = (validation_loss-train_loss)/validation_loss*100
-        print('percent', percent)
         if percent > self.min_delta_percent:
             self.counter +=1
             print('Trigger Times:', self.counter, 'out of ', self.patience)
