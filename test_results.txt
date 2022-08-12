@@ -1,0 +1,11 @@
+
+Device used for classification:  cuda
+
+Number of epochs run:
+Epoch: 330
+
+Best validation accuracy at epoch:
+Epoch: 206
+Training Loss: 0.413..  Validation Loss: 0.138..  Training Accuracy: 0.857..  Validation Accuracy: 0.968.. 
+Test Accuracy: 0.9682539701461792
+acc_list [tensor(0.9683)]
