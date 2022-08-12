@@ -5,6 +5,7 @@ import numpy as np
 import os
 import argparse
 import predict
+import rcnn_func as rcf
 import functions_openCV as ftc
 from functions_openCV import claheHSL
 import precision_plot as pp
@@ -240,6 +241,7 @@ def isolate_fish(imgs, img_list_fish, display=False):
     count = 0
     isolated_fish = []
     conlistReturn = []
+    bounding_boxes = []
     for n in imgs:
         biggestArea = 0
         distanceToMiddle = 100000
@@ -276,6 +278,12 @@ def isolate_fish(imgs, img_list_fish, display=False):
         # Add the contour to a list for later use
         conlistReturn.append(closestCon)
 
+        # Save the bounding box for later use in dataset
+        x, y, w, h = cv2.boundingRect(closestCon)
+        xMin, yMin, xMax, yMax = x, y, x + w, y + h
+        boundBox = [xMin, yMin, xMax, yMax]
+        bounding_boxes.append(boundBox)
+
         # Draw the contour and center of the shape on the image
         cv2.drawContours(copy, [closestCon], -1, (0, 255, 0), 2)
         cv2.circle(copy, closestConMiddle, 7, (255, 255, 255), -1)
@@ -294,7 +302,7 @@ def isolate_fish(imgs, img_list_fish, display=False):
 
         count = count + 1
 
-    return isolated_fish, conlistReturn, mask_cod
+    return isolated_fish, conlistReturn, mask_cod, bounding_boxes
 
 
 def parse_arguments():
@@ -310,6 +318,9 @@ def parse_arguments():
     parser.add_argument('--checkpoint', type=str,
                         default='./checkpoint.pth',
                         help='Path to checkpoint')
+    parser.add_argument('--image_dir_rcnn_images', type=str, default="./fish_pics/rcnn_masks/annotations/images/", help='Absolute path to image folder')
+    parser.add_argument('--image_dir_rcnn_annotations', type=str, default="./fish_pics/rcnn_masks/annotations/annotations/", help='Absolute path to annotation folder')
+    parser.add_argument('--run_rcnn', type=bool, default=True, help='Classify undistorted images')
     parser.add_argument('--topk', type=int, default=5, help='Top k classes and probabilities')
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
     parser.add_argument('--device', type=str, default='cuda', help='\'cuda\' for GPU or \'cpu\' for CPU')
@@ -417,6 +428,18 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
     return len_estimate
 
 
+def create_dataset(arguments, imgs, fish_names, fish_masks, bounding_boxes, label, path_images, path_annotation):
+
+    # Save normalized masks images in a folder
+    normalized_masks = rcf.normalize_masks(fish_masks)
+    counter = 0
+    for mask in normalized_masks:
+        cv2.imwrite(path_images + fish_names[counter] + ".png", mask)
+        counter += 1
+    
+    rcf.save_annotations(imgs, bounding_boxes, fish_names, label, path_annotation)
+
+
 def main(args=None):
 
     # Load arguments
@@ -424,27 +447,62 @@ def main(args=None):
 
     # Load all the images
     if arguments.undistorted:
-        load_folder = '/fish_pics/undistorted/cods/'
+        load_folder_cod = '/fish_pics/undistorted/cods/'
+        load_folder_other = '/fish_pics/undistorted/other/'
     else:
-        load_folder = '/fish_pics/input_images/cods/'
+        load_folder_cod = '/fish_pics/input_images/cods/'
+        load_folder_other = '/fish_pics/input_images/other/'
+
+    # Check if we want to run the RCNN trainer
+    if arguments.run_rcnn:
+        # Run the RCNN trainer
+        fishdataset = rcf.FishDataset
+        fishdataset.path_images = load_folder_cod
+        fishdataset.path_masks = arguments.image_dir_rcnn_images
+
+        img = fishdataset.__getitem__
+        open_cv_image = np.array(img) 
+        # Convert RGB to BGR 
+        open_cv_image = open_cv_image[:, :, ::-1].copy() 
+        cv2.imshow("PIL images RCNN", open_cv_image)
+        cv2.waitKey(0)
+
+        exit()
     
-    images, img_list_fish, img_list_abs_path = ftc.loadImages(folder=load_folder, edit_images=False, show_img=False)
+    # Load all cod images
+    images, img_list_fish, img_list_abs_path = ftc.loadImages(folder=load_folder_cod, edit_images=False, show_img=False)
+
+    # Load all other images
+    images_other, img_list_other, img_list_abs_path_other = ftc.loadImages(folder=load_folder_other, edit_images=False, show_img=False)
 
     # Do we want to calibrate before undistorting the image?
     if arguments.calibrate_cam:
         calibrate_camera()
     else:
         if not arguments.undistorted:
-            # Undistorts images
             dst = undistort_imgs(images)
+            dst_other = undistort_imgs(images_other)
         else:
             dst = images
+            dst_other = images_other
 
         # Resize images for presentation
         resized = resize_img(dst, resizePercent, displayImages=False)
 
+        # Resize other images for presentation
+        resized_other = resize_img(dst_other, resizePercent, displayImages=False)
+
         # Isolate fish contours
-        isolatedFish, contoursFish, cod_masks = isolate_fish(resized, img_list_fish, display=False)
+        isolatedFish, contoursFish, cod_masks, bounding_boxes = isolate_fish(resized, img_list_fish, display=False)
+
+        # Isolate fish contours on others
+        isolatedFish_other, contoursFish_other, other_masks, bounding_boxes_other = isolate_fish(resized_other, img_list_other, display=False)
+
+        # Create dataset for cods training
+        create_dataset(arguments, images, img_list_fish, cod_masks, bounding_boxes, "cod", arguments.image_dir_rcnn_images, arguments.image_dir_rcnn_annotations)
+
+        # Create dataset for other training
+        create_dataset(arguments, images_other, img_list_other, other_masks, bounding_boxes_other, "other", arguments.image_dir_rcnn_images, arguments.image_dir_rcnn_annotations)
 
         # Load the prediction model
         checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.device)
