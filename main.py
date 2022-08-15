@@ -320,7 +320,7 @@ def parse_arguments():
                         help='Path to checkpoint')
     parser.add_argument('--image_dir_rcnn_images', type=str, default="./fish_pics/rcnn_masks/annotations/images/", help='Absolute path to image folder')
     parser.add_argument('--image_dir_rcnn_annotations', type=str, default="./fish_pics/rcnn_masks/annotations/annotations/", help='Absolute path to annotation folder')
-    parser.add_argument('--run_rcnn', type=bool, default=True, help='Classify undistorted images')
+    parser.add_argument('--run_rcnn', type=bool, default=False, help='Classify undistorted images')
     parser.add_argument('--topk', type=int, default=5, help='Top k classes and probabilities')
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
     parser.add_argument('--device', type=str, default='cuda', help='\'cuda\' for GPU or \'cpu\' for CPU')
@@ -430,6 +430,8 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
 
 def create_dataset(arguments, imgs, fish_names, fish_masks, bounding_boxes, label, path_images, path_annotation):
 
+    print("Creating dataset...")
+
     # Save normalized masks images in a folder
     normalized_masks = rcf.normalize_masks(fish_masks)
     counter = 0
@@ -438,6 +440,8 @@ def create_dataset(arguments, imgs, fish_names, fish_masks, bounding_boxes, labe
         counter += 1
     
     rcf.save_annotations(imgs, bounding_boxes, fish_names, label, path_annotation)
+
+    print("Done creating dataset!")
 
 
 def main(args=None):
@@ -456,17 +460,7 @@ def main(args=None):
     # Check if we want to run the RCNN trainer
     if arguments.run_rcnn:
         # Run the RCNN trainer
-        fishdataset = rcf.FishDataset
-        fishdataset.path_images = load_folder_cod
-        fishdataset.path_masks = arguments.image_dir_rcnn_images
-
-        img = fishdataset.__getitem__
-        open_cv_image = np.array(img) 
-        # Convert RGB to BGR 
-        open_cv_image = open_cv_image[:, :, ::-1].copy() 
-        cv2.imshow("PIL images RCNN", open_cv_image)
-        cv2.waitKey(0)
-
+        #rcf.run_rcnn_trainer(arguments, load_folder_cod, load_folder_other)
         exit()
     
     # Load all cod images
@@ -499,10 +493,13 @@ def main(args=None):
         isolatedFish_other, contoursFish_other, other_masks, bounding_boxes_other = isolate_fish(resized_other, img_list_other, display=False)
 
         # Create dataset for cods training
-        create_dataset(arguments, images, img_list_fish, cod_masks, bounding_boxes, "cod", arguments.image_dir_rcnn_images, arguments.image_dir_rcnn_annotations)
+        create_dataset(arguments, images, img_list_fish, isolatedFish, bounding_boxes, "cod", arguments.image_dir_rcnn_images, arguments.image_dir_rcnn_annotations)
 
         # Create dataset for other training
-        create_dataset(arguments, images_other, img_list_other, other_masks, bounding_boxes_other, "other", arguments.image_dir_rcnn_images, arguments.image_dir_rcnn_annotations)
+        create_dataset(arguments, images_other, img_list_other, isolatedFish_other, bounding_boxes_other, "other", arguments.image_dir_rcnn_images, arguments.image_dir_rcnn_annotations)
+
+        # Validate datasets
+        rcf.validate_masks()
 
         # Load the prediction model
         checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.device)

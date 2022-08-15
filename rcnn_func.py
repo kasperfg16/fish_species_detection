@@ -2,9 +2,13 @@ import os
 import numpy as np
 import torch
 import torchvision
+import cv2
+#import utils
+#import transforms as T
 from PIL import Image
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
+#from engine import train_one_epoch, evaluate
 
 
 class FishDataset(torch.utils.data.Dataset):
@@ -58,7 +62,7 @@ class FishDataset(torch.utils.data.Dataset):
         image_id = torch.tensor([idx])
         area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
         # suppose all instances are not crowd
-        iscrowd = torch.zeros((num_objs,), dtype=torch.int64)
+        isCod = torch.zeros((num_objs,), dtype=torch.int64)
 
         target = {}
         target["boxes"] = boxes
@@ -66,7 +70,7 @@ class FishDataset(torch.utils.data.Dataset):
         target["masks"] = masks
         target["image_id"] = image_id
         target["area"] = area
-        target["iscrowd"] = iscrowd
+        target["isCod"] = isCod
 
         if self.transforms is not None:
             img, target = self.transforms(img, target)
@@ -78,8 +82,8 @@ class FishDataset(torch.utils.data.Dataset):
 
 
 def get_model_instance_segmentation(num_classes):
-    # load an instance segmentation model pre-trained on COCO
-    model = torchvision.models.detection.maskrcnn_resnet50_fpn(weights="DEFAULT")
+    # load an instance segmentation model pre-trained pre-trained on COCO
+    model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 
     # get number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -91,20 +95,111 @@ def get_model_instance_segmentation(num_classes):
     hidden_layer = 256
     # and replace the mask predictor with a new one
     model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask,
-                                                       hidden_layer,
-                                                       num_classes)
+                                                    hidden_layer,
+                                                    num_classes)
 
     return model
+
+"""
+def get_transform(train):
+    transforms = []
+    transforms.append(T.ToTensor())
+    if train:
+        transforms.append(T.RandomHorizontalFlip(0.5))
+    return T.Compose(transforms)
+
+
+def run_rcnn_trainer(arguments, masksPath, masksPathOther):
+    # train on the GPU or on the CPU, if a GPU is not available
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
+    # our dataset has two classes only - background and person
+    num_classes = 3
+    # use our dataset and defined transformations
+    fishdataset = rcf.FishDataset
+
+    dataset = FishDataset('PennFudanPed', get_transform(train=True))
+    fishdataset.path_images = masksPath
+    fishdataset.path_masks = arguments.image_dir_rcnn_images
+
+    dataset_test = FishDataset('PennFudanPed', get_transform(train=False))
+    fishdataset.path_images = masksPath
+    fishdataset.path_masks = arguments.image_dir_rcnn_images
+
+    # split the dataset in train and test set
+    indices = torch.randperm(len(dataset)).tolist()
+    dataset = torch.utils.data.Subset(dataset, indices[:-50])
+    dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
+
+    # define training and validation data loaders
+    data_loader = torch.utils.data.DataLoader(
+        dataset, batch_size=2, shuffle=True, num_workers=4,
+        collate_fn=utils.collate_fn)
+
+    data_loader_test = torch.utils.data.DataLoader(
+        dataset_test, batch_size=1, shuffle=False, num_workers=4,
+        collate_fn=utils.collate_fn)
+
+    # get the model using our helper function
+    model = get_model_instance_segmentation(num_classes)
+
+    # move model to the right device
+    model.to(device)
+
+    # construct an optimizer
+    params = [p for p in model.parameters() if p.requires_grad]
+    optimizer = torch.optim.SGD(params, lr=0.005,
+                                momentum=0.9, weight_decay=0.0005)
+    # and a learning rate scheduler
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
+                                                   step_size=3,
+                                                   gamma=0.1)
+
+    # let's train it for 10 epochs
+    num_epochs = 10
+
+    for epoch in range(num_epochs):
+        # train for one epoch, printing every 10 iterations
+        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10)
+        # update the learning rate
+        lr_scheduler.step()
+        # evaluate on the test dataset
+        evaluate(model, data_loader_test, device=device)
+
+"""
+
+def validate_masks():
+    folder = "fish_pics/rcnn_masks/annotations/images/"
+    #folder = "fish_pics/PennFudanPed/PedMasks/"
+    for filename in os.listdir(folder):
+        img = cv2.imread(os.path.join(folder,filename))
+        if img is not None:
+            norm_image = cv2.normalize(img, None, alpha=0, beta=256, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+            cv2.imshow("Image", norm_image)
+            cv2.waitKey(0)
 
 
 # function to normalize a masks and save in a list
 def normalize_masks(masks):
     normalized_masks = []
     for mask in masks:
-        normalized_masks.append(mask/255)
+        # First convert to black and white image
+        gray_mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+        # Then convert to black and white image and then normalize image to turn it into a bit image
+        height, width = gray_mask.shape
+        for i in range(height):
+            for j in range(width):
+                # img[i, j] is the RGB pixel at position (i, j)
+                # check if it's [0, 0, 0] and replace with [255, 255, 255] if so
+                if gray_mask[i, j].sum() != 0:
+                    gray_mask[i, j] = 1
+
+        #norm_image = cv2.normalize(gray_mask, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        normalized_masks.append(gray_mask)
     return normalized_masks
     
-# function to save name of masks in a text file
+# function to save name of masks annotations in a text file
 def save_annotations(imgs, bounding_box, imgs_names, label, path):
     counter = 0
     with open(path + "annotations.txt", 'w') as f:
