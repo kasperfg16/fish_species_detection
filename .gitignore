@@ -130,7 +130,7 @@ dmypy.json
 .pyre/
 checkpoint.pth
 
-fish_pics/input_images
+
 data_set/test/cod/
 fish_pics/output_images/
 acc_k_fold_val.txt
