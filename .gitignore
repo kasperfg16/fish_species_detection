@@ -130,7 +130,7 @@ dmypy.json
 .pyre/
 checkpoint.pth
 
-fish_pics/input_images/cods/
+fish_pics/input_images
 data_set/test/cod/
 fish_pics/output_images/
 acc_k_fold_val.txt
@@ -139,3 +139,5 @@ acc_k_fold_val.txt
 .idea
 fish_pics/output_images/
 runs
+fish_pics/rcnn_dataset
+fish_pics/rcnn_masks
