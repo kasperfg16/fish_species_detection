@@ -7,4 +7,4 @@
 #SBATCH --time 24:00:00
 #SBATCH --gres=gpu:1
 #SBATCH --qos=normal
-srun python train_k_fold_val.py
+srun python train_k_fold_val.py --num_of_k 1
