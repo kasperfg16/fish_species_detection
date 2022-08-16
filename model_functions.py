@@ -215,6 +215,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     epoch = 0
     early_stopping = EarlyStopping(patience=patience, min_delta_percent=10)
     writer = SummaryWriter(comment='_' + str(k) + '_k_of_' + str(num_k) + '_k')
+    count_best_acc = 0
 
     # Run while 'ctrl+c' is not pressed
     try:
@@ -252,6 +253,13 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                     print('New best validation accuracy')
                     best_acc = val_acc
                     best_model_wts = copy.deepcopy(model.state_dict())
+                
+                # Early stop if validation accuracy doesnt increase
+                if val_acc <= best_acc:
+                    count_best_acc += 1
+                    if count_best_acc >= 500:
+                        converged = True
+                        break
 
                 # Early stopping
                 early_stopping(training_loss, validation_loss)
