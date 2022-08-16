@@ -3,12 +3,12 @@ import numpy as np
 import torch
 import torchvision
 import cv2
-#import utils
-#import transforms as T
+import utils
+import transforms as T
 from PIL import Image
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
-#from engine import train_one_epoch, evaluate
+from engine import train_one_epoch, evaluate
 
 
 class FishDataset(torch.utils.data.Dataset):
@@ -100,7 +100,7 @@ def get_model_instance_segmentation(num_classes):
 
     return model
 
-"""
+
 def get_transform(train):
     transforms = []
     transforms.append(T.ToTensor())
@@ -116,7 +116,7 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
     # our dataset has two classes only - background and person
     num_classes = 3
     # use our dataset and defined transformations
-    fishdataset = rcf.FishDataset
+    fishdataset = FishDataset
 
     dataset = FishDataset('PennFudanPed', get_transform(train=True))
     fishdataset.path_images = masksPath
@@ -166,7 +166,6 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
         # evaluate on the test dataset
         evaluate(model, data_loader_test, device=device)
 
-"""
 
 def validate_masks():
     folder = "fish_pics/rcnn_masks/annotations/images/"

@@ -320,7 +320,8 @@ def parse_arguments():
                         help='Path to checkpoint')
     parser.add_argument('--image_dir_rcnn_images', type=str, default="./fish_pics/rcnn_masks/annotations/images/", help='Absolute path to image folder')
     parser.add_argument('--image_dir_rcnn_annotations', type=str, default="./fish_pics/rcnn_masks/annotations/annotations/", help='Absolute path to annotation folder')
-    parser.add_argument('--run_rcnn', type=bool, default=False, help='Classify undistorted images')
+    parser.add_argument('--run_rcnn', type=bool, default=True, help='Classify undistorted images')
+    parser.add_argument('--run_prediction_model', type=bool, default=False, help='Classify undistorted images')
     parser.add_argument('--topk', type=int, default=5, help='Top k classes and probabilities')
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
     parser.add_argument('--device', type=str, default='cuda', help='\'cuda\' for GPU or \'cpu\' for CPU')
@@ -460,7 +461,8 @@ def main(args=None):
     # Check if we want to run the RCNN trainer
     if arguments.run_rcnn:
         # Run the RCNN trainer
-        #rcf.run_rcnn_trainer(arguments, load_folder_cod, load_folder_other)
+        print("Running the RCNN trainer...")
+        rcf.run_rcnn_trainer(arguments, load_folder_cod, load_folder_other)
         exit()
     
     # Load all cod images
@@ -469,7 +471,7 @@ def main(args=None):
     # Load all other images
     images_other, img_list_other, img_list_abs_path_other = ftc.loadImages(folder=load_folder_other, edit_images=False, show_img=False)
 
-    # Do we want to calibrate before undistorting the image?
+    # Do we want to calibrate before undistorting the image, if not, then run the fish isolation and detection
     if arguments.calibrate_cam:
         calibrate_camera()
     else:
@@ -502,17 +504,18 @@ def main(args=None):
         rcf.validate_masks()
 
         # Load the prediction model
-        checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.device)
+        if arguments.run_prediction_model:
+            checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.device)
 
-        # Predict
-        predictions = predict.predict_species(img_list_abs_path, arguments.topk, checkpoint, model, class_to_name_dict,
-                                            device)
+            # Predict
+            predictions = predict.predict_species(img_list_abs_path, arguments.topk, checkpoint, model, class_to_name_dict,
+                                                device)
 
-        # ArUco marker calibration for size estimation, displays results of the calculated size
-        len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
+            # ArUco marker calibration for size estimation, displays results of the calculated size
+            len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
 
-        # Precision calculation
-        pp.calc_len_est(img_list_abs_path, len_estimate)
+            # Precision calculation
+            pp.calc_len_est(img_list_abs_path, len_estimate)
 
 
 if __name__ == '__main__':
