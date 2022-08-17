@@ -141,3 +141,6 @@ fish_pics/output_images/
 runs
 fish_pics/rcnn_dataset
 fish_pics/rcnn_masks
+status.txt
+events.out.tfevents.1660650411.nv-ai-03.srv.aau.dk.41002.0
+checkpoint1.pth

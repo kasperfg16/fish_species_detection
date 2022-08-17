@@ -28,7 +28,7 @@ parser.add_argument('--batch_size_test_loader', type = int, default = 1, help = 
 parser.add_argument('--calibrate_cam', type = bool, default = False, help = 'Set to \'True\' to re-calibrate camera. Remember to put images of checkerboard in calibration_imgs folder')
 parser.add_argument('--undistort', type = bool, default = True, help = 'Set to False to not undistort images when training')
 parser.add_argument('--patience', type = int, default = 5, help = 'Patience: number of epochs to look for improvements in validation loss triggering training stops')
-parser.add_argument('--re_undistort', type = bool, default = False, help = 're_undistort: Set to \'False\' if the images in fish_pics\input_images has not been changed and are all-ready undistorted')
+parser.add_argument('--re_undistort', type = bool, default = False, help = 're_undistort: Set to \'False\' if the images in fish_pics\input_images has not been changed and are already undistorted')
 arguments = parser.parse_args()
 
 acc_list = []
