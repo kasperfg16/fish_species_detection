@@ -1,14 +1,17 @@
 import copy
 import json
-import os, os.path
-from turtle import st
-import torch
-import processing_functions
-from torch import nn
-from torchvision.models import VGG16_Weights, AlexNet_Weights
-from torchvision import models
+import os
+import os.path
 from collections import OrderedDict
+
+import torch
+from torch import nn
 from torch.utils.tensorboard import SummaryWriter
+from torchvision import models
+from torchvision.models import AlexNet_Weights, VGG16_Weights
+
+import processing_functions
+
 
 # Class for early stopping if validation loss is bigger than training loss to many times
 class EarlyStopping():
@@ -32,6 +35,8 @@ class EarlyStopping():
             self.status_early_stop = '\nCount reset'
             self.counter = 0
             self.status_early_stop = '\nCount: ' + str(self.counter) + ' of ' + str(self.patience) + ' before early stopping because validation loss is bigger than training loss to many times (overfitting)'
+        else:
+            self.status_early_stop = ''
             
 
 # Function for saving the model checkpoint
@@ -219,6 +224,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     early_stopping = EarlyStopping(patience=patience, min_delta_percent=10)
     writer = SummaryWriter(comment='_' + str(k) + '_k_of_' + str(num_k) + '_k')
     count_best_acc = 0
+    count_limit = 500
 
     # Run while 'ctrl+c' is not pressed
     try:
@@ -235,33 +241,34 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                     running_validation_loss, running_val_accuracy = validation(model, validate_loader, criterion, device)
 
                 if arg_epochs == -1:
-                    status_string = 'Epoch: ' + str(epoch)
+                    status_string = '\nEpoch: ' + str(epoch)
                 else:
-                    status_string = 'Epoch: ' + str(e+1) + '/' + str(num_epochs)
+                    status_string = '\nEpoch: ' + str(e+1) + '/' + str(num_epochs)
 
-                training_loss = running_train_loss/len(train_loader)
-                train_acc = running_train_accuracy/len(train_loader)
+                training_loss = float(running_train_loss/len(train_loader))
+                train_acc = float(running_train_accuracy/len(train_loader))
 
-                validation_loss = running_validation_loss/len(validate_loader)
-                val_acc = running_val_accuracy/len(validate_loader)
+                validation_loss = float(running_validation_loss/len(validate_loader))
+                val_acc = float(running_val_accuracy/len(validate_loader))
                 
-                status_string += '\nTraining Loss: ' + str(training_loss)
-                status_string += ' Validation Loss: ' + str(validation_loss)
-                status_string += ' Training Accuracy: ' + str(train_acc)
-                status_string += ' Validation Accuracy: ' + str(val_acc)
+                status_string += '\nTraining Loss: ' + str("{:.5f}".format(training_loss))
+                status_string += ', Validation Loss: ' + str("{:.5f}".format(validation_loss))
+                status_string += ', Training Accuracy: ' + str("{:.5f}".format(train_acc))
+                status_string += ', Validation Accuracy: ' + str("{:.5f}".format(val_acc))
 
                 # Deep copy the model if it has the best validation accuracy
                 if val_acc > best_acc:
                     status_string += '\nNew best validation accuracy'
                     best_acc = val_acc
                     best_model_wts = copy.deepcopy(model.state_dict())
-                
+                    status_string += '\nCount reset'
+                    count_best_acc = 0
+                    status_string += '\nCount ' + str(count_best_acc) + ' of ' + str(count_limit) + ' before early stopping because validation accuracy doesn\'t increase'
                 # Early stop if validation accuracy doesnt increase
-                if val_acc <= best_acc:
-                    limit = 500
+                elif val_acc <= best_acc:
                     count_best_acc += 1
-                    status_string += '\nCount ' + str(count_best_acc) + ' of ' + str(limit) + ' before early stopping because validation accuracy doesnt increase'
-                    if count_best_acc >= limit:
+                    status_string += '\nCount ' + str(count_best_acc) + ' of ' + str(count_limit) + ' before early stopping because validation accuracy doesn\'t increase'
+                    if count_best_acc >= count_limit:
                         converged = True
                         break
 
@@ -279,7 +286,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                 writer.add_scalar('Accuracy/validation', val_acc, epoch)
                 writer.flush()
 
-                file1 = open("status.txt", "a")
+                file1 = open("status_training.txt", "a")
                 file1.write(status_string)
                 file1.close()
                 
