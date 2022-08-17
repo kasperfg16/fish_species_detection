@@ -9,6 +9,7 @@ import rcnn_func as rcf
 import functions_openCV as ftc
 from functions_openCV import claheHSL
 import precision_plot as pp
+from os.path import exists
 
 # Global variables
 displayCorners = False
@@ -444,6 +445,79 @@ def create_dataset(arguments, imgs, fish_names, fish_masks, bounding_boxes, labe
 
     print("Done creating dataset!")
 
+create_dataset_mask_rcnn()
+
+def main_2(args=None):
+    # Load arguments
+    arguments = parse_arguments()
+
+    load_folder = '/fish_pics/input_images'
+
+    # Find path to folder where "train.py" python file is
+    # Insures that we can run the script from anywhere and it will still work
+    basedir = os.path.dirname(os.path.abspath(__file__))
+    name_classes_folder = load_folder
+    path_classes_folder = basedir + name_classes_folder
+
+    # Find classes
+    classes = next(os.walk(path_classes_folder))[1]
+
+    for _class in classes:
+        path_class_folder = os.path.join(path_classes_folder, _class)
+        _, _, img_names = next(os.walk(path_class_folder))
+        for img_name in img_names:
+            if not arguments.undistorted:
+                
+                # Find apth to each images
+                path_img = os.path.join(path_class_folder, img_name)
+                img_list_fish = []
+                imgs = []
+
+                # Find image name with no extention e.g. ".png"
+                img_name_no_ex = os.path.splitext(img_name)[0]
+                img_list_fish.append(img_name_no_ex)
+                img = cv2.imread(path_img)
+                imgs.append(img)
+
+                # Undistort images
+                dst = undistort_imgs(imgs)
+
+                # Isolate fish contours
+                isolatedFish, contoursFish, masks, bounding_boxes = isolate_fish(dst, img_list_fish, display=False)
+
+                # Create paths for folders
+                imgs_folder = '/fish_pics/rcnn_dataset/images'
+                path_imgs_folder = basedir + imgs_folder
+                print('path_imgs_folder', path_imgs_folder)
+
+                masks_folder = '/fish_pics/rcnn_dataset/masks'
+                path_masks_folder = basedir + masks_folder
+
+                annotations_folder = '/fish_pics/rcnn_dataset/annotations'
+                path_annotations_folder = basedir + annotations_folder
+                
+                # Create folders if they are not created
+                if not exists(path_imgs_folder):
+                    os.makedirs(path_imgs_folder)
+                
+                if not exists(path_masks_folder):
+                    os.makedirs(path_masks_folder)
+                
+                if not exists(path_annotations_folder):
+                    os.makedirs(path_annotations_folder)
+
+                create_dataset_mask_rcnn(
+                    imgs=imgs,
+                    fish_names=img_list_fish,
+                    fish_masks=masks,
+                    bounding_boxes=bounding_boxes,
+                    label=_class,
+                    path_masks=path_masks_folder,
+                    path_annotations=path_annotations_folder,
+                    path_imgs=path_imgs_folder)
+
+    print("Done creating dataset!")
+
 
 def main(args=None):
 
@@ -465,6 +539,9 @@ def main(args=None):
         rcf.run_rcnn_trainer(arguments, load_folder_cod, load_folder_other)
         exit()
     
+    
+
+
     # Load all cod images
     images, img_list_fish, img_list_abs_path = ftc.loadImages(folder=load_folder_cod, edit_images=False, show_img=False)
 
@@ -519,4 +596,4 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-    main()
+    main_2()
