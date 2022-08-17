@@ -175,6 +175,12 @@ def get_transform(train):
 
 
 def run_rcnn_trainer(arguments, masksPath, masksPathOther):
+
+    # Variables
+    model_name = 'model.pth'
+    model_path = os.path.join(basedir, model_name)
+    load_model = False
+
     # train on the GPU or on the CPU, if a GPU is not available
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -198,8 +204,12 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
         dataset_test, batch_size=1, shuffle=False, num_workers=4,
         collate_fn=utils.collate_fn)
 
-    # get the model using our helper function
-    model = get_model_instance_segmentation(num_classes)
+    if not load_model:
+        # get the model using our helper function
+        model = get_model_instance_segmentation(num_classes)
+    else:
+        # Load the model
+        model = torch.load(model_path)
 
     # move model to the right device
     model.to(device)
@@ -228,8 +238,6 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
 
     print("Saving model to disk...")
     basedir = os.path.dirname(os.path.abspath(__file__))
-    model_name = 'model.pth'
-    model_path = os.path.join(basedir, model_name)
 
     torch.save(model.state_dict(), model_path)
     print("Model saved.")
