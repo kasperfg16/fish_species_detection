@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description='Train Image Classifier')
 # Command line arguments
 parser.add_argument('--arch', type = str, default = 'vgg', help = 'NN Model Architecture')
 parser.add_argument('--learning_rate', type = float, default = 0.001, help = 'Learning Rate')
-parser.add_argument('--hidden_units', type = int, default = 5000, help = 'Neurons in the Hidden Layer')
+parser.add_argument('--hidden_units', type = int, default = 10000, help = 'Neurons in the Hidden Layer')
 parser.add_argument('--epochs', type = int, default = -1, help = 'Epochs. If epochs = -1 the training will run until convergence (When validation loss is not improving)')
 parser.add_argument('--gpu', type = str, default = 'cuda', help = 'GPU or CPU')
 parser.add_argument('--save_dir', type = str, default = 'checkpoint.pth', help = 'Path to checkpoint')
