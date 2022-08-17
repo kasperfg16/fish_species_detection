@@ -10,7 +10,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from engine import train_one_epoch, evaluate
 
-
+"""
 class FishDataset(torch.utils.data.Dataset):
     def __init__(self, root, transforms):
         self.root = root
@@ -19,8 +19,8 @@ class FishDataset(torch.utils.data.Dataset):
         self.path_masks = None
         # load all image files, sorting them to
         # ensure that they are aligned
-        self.imgs = list(sorted(os.listdir(os.path.join(root, self.path_images))))
-        self.masks = list(sorted(os.listdir(os.path.join(root, self.path_masks))))
+        self.imgs = list(sorted(os.listdir(os.path.join(root, "PennFudanPed/PNGImages/"))))
+        self.masks = list(sorted(os.listdir(os.path.join(root, "PennFudanPed/PedMasks/"))))
 
     def __getitem__(self, idx):
         # load images and masks
@@ -79,6 +79,70 @@ class FishDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.imgs)
+"""
+
+class PennFudanDataset(torch.utils.data.Dataset):
+    def __init__(self, root, transforms=None):
+        self.root = root
+        self.transforms = transforms
+        # load all image files, sorting them to
+        # ensure that they are aligned
+        self.imgs = list(sorted(os.listdir(os.path.join(root, "PNGImages"))))
+        self.masks = list(sorted(os.listdir(os.path.join(root, "PedMasks"))))
+
+    def __getitem__(self, idx):
+        # load images ad masks
+        img_path = os.path.join(self.root, "PNGImages", self.imgs[idx])
+        mask_path = os.path.join(self.root, "PedMasks", self.masks[idx])
+        img = Image.open(img_path).convert("RGB")
+        # note that we haven't converted the mask to RGB,
+        # because each color corresponds to a different instance
+        # with 0 being background
+        mask = Image.open(mask_path)
+
+        mask = np.array(mask)
+        # instances are encoded as different colors
+        obj_ids = np.unique(mask)
+        # first id is the background, so remove it
+        obj_ids = obj_ids[1:]
+
+        # split the color-encoded mask into a set
+        # of binary masks
+        masks = mask == obj_ids[:, None, None]
+
+        # get bounding box coordinates for each mask
+        num_objs = len(obj_ids)
+        boxes = []
+        for i in range(num_objs):
+            pos = np.where(masks[i])
+            xmin = np.min(pos[1])
+            xmax = np.max(pos[1])
+            ymin = np.min(pos[0])
+            ymax = np.max(pos[0])
+            boxes.append([xmin, ymin, xmax, ymax])
+
+        boxes = torch.as_tensor(boxes, dtype=torch.float32)
+        # there is only one class
+        labels = torch.ones((num_objs,), dtype=torch.int64)
+        masks = torch.as_tensor(masks, dtype=torch.uint8)
+
+        image_id = torch.tensor([idx])
+        area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        # suppose all instances are not crowd
+        iscrowd = torch.zeros((num_objs,), dtype=torch.int64)
+
+        target = {}
+        target["boxes"] = boxes
+        target["labels"] = labels
+        target["masks"] = masks
+        target["image_id"] = image_id
+        target["area"] = area
+        target["iscrowd"] = iscrowd
+
+        if self.transforms is not None:
+            img, target = self.transforms(img, target)
+
+        return img, target
 
 
 def get_model_instance_segmentation(num_classes):
@@ -114,20 +178,13 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     # our dataset has two classes only - background and person
-    num_classes = 3
+    num_classes = 2
     # use our dataset and defined transformations
-    fishdataset = FishDataset
-
-    dataset = FishDataset('PennFudanPed', get_transform(train=True))
-    fishdataset.path_images = masksPath
-    fishdataset.path_masks = arguments.image_dir_rcnn_images
-
-    dataset_test = FishDataset('PennFudanPed', get_transform(train=False))
-    fishdataset.path_images = masksPath
-    fishdataset.path_masks = arguments.image_dir_rcnn_images
+    dataset = PennFudanDataset('PennFudanPed', get_transform(train=True))
+    dataset_test = PennFudanDataset('PennFudanPed', get_transform(train=False))
 
     # split the dataset in train and test set
-    indices = torch.randperm(len(dataset)).tolist()
+    indices = torch.randperm(len(dataset.imgs)).tolist()
     dataset = torch.utils.data.Subset(dataset, indices[:-50])
     dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
 
@@ -165,6 +222,23 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
         lr_scheduler.step()
         # evaluate on the test dataset
         evaluate(model, data_loader_test, device=device)
+
+    print("That's it!")
+
+    test_rcnn(dataset_test, model, device)
+
+
+def test_rcnn(dataset_test, model, device):
+    # pick one image from the test set
+    img, _ = dataset_test[0]
+    # put the model in evaluation mode
+    model.eval()
+    with torch.no_grad():
+        prediction = model([img.to(device)])
+        print(prediction)
+    
+    Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
+    Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
 
 
 def validate_masks():
