@@ -226,6 +226,10 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
 
     print("That's it!")
 
+    print("Saving model to disk...")
+    torch.save(model.state_dict(), "./model.pth")
+    print("Model saved.")
+
     test_rcnn(dataset_test, model, device)
 
 
