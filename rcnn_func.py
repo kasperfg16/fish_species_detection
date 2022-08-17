@@ -237,8 +237,11 @@ def test_rcnn(dataset_test, model, device):
         prediction = model([img.to(device)])
         print(prediction)
     
-    Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
-    Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
+    im_normal = Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
+    im_normal.show()
+    
+    im_mask = Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
+    im_mask.show()
 
 
 def validate_masks():
