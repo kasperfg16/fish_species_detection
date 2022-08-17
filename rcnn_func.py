@@ -9,6 +9,7 @@ from PIL import Image
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from engine import train_one_epoch, evaluate
+from matplotlib import pyplot as plt
 
 """
 class FishDataset(torch.utils.data.Dataset):
@@ -239,10 +240,16 @@ def test_rcnn(dataset_test, model, device):
     
     im_normal = Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
     im_normal.show()
-    
     im_mask = Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
     im_mask.show()
 
+    plt.show(im_normal)
+    plt.axis("off")
+    plt.show()
+
+    plt.show(im_mask)
+    plt.axis("off")
+    plt.show()
 
 def validate_masks():
     folder = "fish_pics/rcnn_masks/annotations/images/"
