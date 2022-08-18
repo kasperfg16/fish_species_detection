@@ -445,7 +445,40 @@ def create_dataset(arguments, imgs, fish_names, fish_masks, bounding_boxes, labe
 
     print("Done creating dataset!")
 
-create_dataset_mask_rcnn()
+
+def create_dataset_mask_rcnn(imgs, fish_names, fish_masks, bounding_boxes, label, path_masks, path_annotations, path_imgs):
+
+    
+    # Save images in a folder
+    counter = 0
+    for img in imgs:
+        path_img = os.path.join(path_imgs, fish_names[counter])
+        path_img = path_img + '.png'
+        print(path_img)
+        cv2.imwrite(path_img, img)
+        counter += 1
+
+    # Save masks in a folder
+    counter = 0
+    normalized_masks = rcf.normalize_masks(fish_masks)
+    for mask in normalized_masks:
+        path_img = os.path.join(path_masks, fish_names[counter])
+        path_img = path_img + '.png'
+        print(path_img)
+        cv2.imwrite(path_img, mask)
+        counter += 1
+
+    rcf.save_annotations(imgs, bounding_boxes, fish_names, label, path_annotations)
+
+def validate_masks_2():
+    folder = "fish_pics/rcnn_dataset/masks"
+    #folder = "fish_pics/PennFudanPed/PedMasks/"
+    for filename in os.listdir(folder):
+        img = cv2.imread(os.path.join(folder,filename))
+        if img is not None:
+            norm_image = cv2.normalize(img, None, alpha=0, beta=256, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+            cv2.imshow("Image", norm_image)
+            cv2.waitKey(0)
 
 def main_2(args=None):
     # Load arguments
@@ -509,7 +542,7 @@ def main_2(args=None):
                 create_dataset_mask_rcnn(
                     imgs=imgs,
                     fish_names=img_list_fish,
-                    fish_masks=masks,
+                    fish_masks=isolatedFish,
                     bounding_boxes=bounding_boxes,
                     label=_class,
                     path_masks=path_masks_folder,
@@ -538,9 +571,6 @@ def main(args=None):
         print("Running the RCNN trainer...")
         rcf.run_rcnn_trainer(arguments, load_folder_cod, load_folder_other)
         exit()
-    
-    
-
 
     # Load all cod images
     images, img_list_fish, img_list_abs_path = ftc.loadImages(folder=load_folder_cod, edit_images=False, show_img=False)

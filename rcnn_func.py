@@ -301,17 +301,17 @@ def normalize_masks(masks):
 # function to save name of masks annotations in a text file
 def save_annotations(imgs, bounding_box, imgs_names, label, path):
     counter = 0
-    with open(path + "annotations.txt", 'w') as f:
-        for img in imgs:
-            write = "Image filename : " + "\"" + imgs_names[counter] + ".jpg" + "\"" + "\n" + \
-            "Image size (X x Y x C) : " + "{} x {} x {}".format(img.shape[0], img.shape[1], img.shape[2]) + "\n" + \
-            "Database : \"fish_database\"" + "\n" + \
-            "Objects with ground truth : " + str(1) + " { " + "No idea what to put here lol" +" }" + "\n" + \
-            "Original label for object 1 \"{}\" : ".format(label) + label + "\n" + \
-            "Bounding box for object 1 \"{}\" (Xmin, Ymin) - (Xmax, Ymax) : ".format(label) + "({},{}) - ({}, {})".format(bounding_box[counter][0], bounding_box[counter][1], bounding_box[counter][2], bounding_box[counter][3]) + "\n" + \
-            "Pixel mask for object 1 \"{}\" : ".format(label) + "\"" + (path + imgs_names[counter]) + ".png\""
 
-            with open(path + imgs_names[counter] + ".txt", 'w') as f:
-                f.write(write + '\n')
+    for img in imgs:
+        write = "Image filename : " + "\"" + imgs_names[counter] + ".jpg" + "\"" + "\n" + \
+        "Image size (X x Y x C) : " + "{} x {} x {}".format(img.shape[0], img.shape[1], img.shape[2]) + "\n" + \
+        "Database : \"fish_database\"" + "\n" + \
+        "Objects with ground truth : " + str(1) + " { " + "No idea what to put here lol" +" }" + "\n" + \
+        "Original label for object 1 \"{}\" : ".format(label) + label + "\n" + \
+        "Bounding box for object 1 \"{}\" (Xmin, Ymin) - (Xmax, Ymax) : ".format(label) + "({},{}) - ({}, {})".format(bounding_box[counter][0], bounding_box[counter][1], bounding_box[counter][2], bounding_box[counter][3]) + "\n" + \
+        "Pixel mask for object 1 \"{}\" : ".format(label) + "\"" + (path + imgs_names[counter]) + ".png\""
+
+        with open(path + '/' + imgs_names[counter] + ".txt", 'w') as f:
+            f.write(write + '\n')
 
             counter += 1
