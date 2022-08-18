@@ -105,7 +105,9 @@ def get_transform(train):
     return T.Compose(transforms)
 
 
-def run_rcnn_trainer(arguments, masksPath, masksPathOther):
+def run_rcnn_trainer(model_path):
+
+    print("Running the mask RCNN trainer...")
 
     # Wandb for validation
     wandb.init(project="rcnn_fish_detection", entity="benmusak")
@@ -115,10 +117,6 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
     "epochs": 5,
     "batch_size": 2
     }
-
-    # Variables
-    model_name = 'model.pth'
-    load_model = False
 
     # train on the GPU or on the CPU, if a GPU is not available
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -143,12 +141,7 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
         dataset_test, batch_size=1, shuffle=False, num_workers=1,
         collate_fn=utils.collate_fn)
 
-    if not load_model:
-        # get the model using our helper function
-        model = get_model_instance_segmentation(num_classes)
-    else:
-        # Load the model
-        model = torch.load(model_path)
+    model = get_model_instance_segmentation(num_classes)
 
     # move model to the right device
     model.to(device)
@@ -163,11 +156,11 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
                                                    gamma=0.1)
 
     # let's train it for 10 epochs
-    num_epochs = 5
+    num_epochs = 100
 
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
-        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10)
+        train_one_epoch(model, optimizer, data_loader, device, epoch, num_epochs, print_freq=10,)
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
@@ -177,17 +170,48 @@ def run_rcnn_trainer(arguments, masksPath, masksPathOther):
     print("That's it!")
 
     print("Saving model to disk...")
-    basedir = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(basedir, model_name)
     torch.save(model.state_dict(), model_path)
     print("Model saved.")
 
-    test_rcnn(dataset_test, model, device)
+    test_rcnn(dataset_test, device, model_path)
 
 
-def test_rcnn(dataset_test, model, device):
+def test_rcnn(dataset_test, device, model_path):
+
+    model = torch.load(model_path)
+
+    count = 0
     # pick one image from the test set
-    img, _ = dataset_test[0]
+    for img in dataset_test:
+        img, _ = dataset_test[count]
+        # put the model in evaluation mode
+        model.eval()
+        with torch.no_grad():
+            prediction = model([img.to(device)])
+            print(prediction)
+        
+        im_normal = Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
+        im_normal.show()
+        im_mask = Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
+        im_mask.show()
+
+        type_im_normal= type(im_normal)
+        type_im_mask= type(im_mask)
+        print('type_im_normal' , type_im_normal)
+        print('type_im_mask' , type_im_mask)
+
+        count += 1
+
+
+def predict_rcnn(img, model_path):
+
+    # train on the GPU or on the CPU, if a GPU is not available
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
+    model = torch.load(model_path)
+
+    count = 0
+    
     # put the model in evaluation mode
     model.eval()
     with torch.no_grad():
@@ -199,15 +223,13 @@ def test_rcnn(dataset_test, model, device):
     im_mask = Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
     im_mask.show()
 
-    plt.show(im_normal)
-    plt.axis("off")
-    plt.show()
-    cv2.imwrite('im_normal', im_normal) 
+    type_im_normal= type(im_normal)
+    type_im_mask= type(im_mask)
+    print('type_im_normal' , type_im_normal)
+    print('type_im_mask' , type_im_mask)
 
-    plt.show(im_mask)
-    plt.axis("off")
-    plt.show()
-    cv2.imwrite('im_mask', im_mask) 
+    count += 1
+
 
 def validate_masks(path):
     folder = path

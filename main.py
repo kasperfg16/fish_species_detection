@@ -1,5 +1,7 @@
 from ast import arg
 from ctypes import sizeof
+import shutil
+from turtle import st
 import cv2
 import numpy as np
 import os
@@ -321,7 +323,7 @@ def parse_arguments():
                         help='Path to checkpoint')
     parser.add_argument('--image_dir_rcnn_images', type=str, default="./fish_pics/rcnn_masks/annotations/images/", help='Absolute path to image folder')
     parser.add_argument('--image_dir_rcnn_annotations', type=str, default="./fish_pics/rcnn_masks/annotations/annotations/", help='Absolute path to annotation folder')
-    parser.add_argument('--run_rcnn', type=bool, default=True, help='Classify undistorted images')
+    parser.add_argument('--train_rcnn', type=bool, default=True, help='Train mask rcnn classifier')
     parser.add_argument('--run_prediction_model', type=bool, default=False, help='Classify undistorted images')
     parser.add_argument('--topk', type=int, default=5, help='Top k classes and probabilities')
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
@@ -330,6 +332,8 @@ def parse_arguments():
     parser.add_argument('--calibrate_cam', type=bool, default=False, help='Set to \'True\' to re-calibrate camera. '
                         'Remember to put images of checkerboard in calibration_imgs folder')
     parser.add_argument('--undistorted', type=bool, default=False, help='Classify undistorted images')
+    parser.add_argument('--make_new_data_set', type=bool, default=False, help='Use images in fish_pics\input_images and create a new dataset')
+    parser.add_argument('--model_name', type=str, default='model_1', help='Select the model that we want to use for instance segmentation')
 
     arguments = parser.parse_args()
 
@@ -446,7 +450,7 @@ def create_dataset(arguments, imgs, fish_names, fish_masks, bounding_boxes, labe
     print("Done creating dataset!")
 
 
-def create_dataset_mask_rcnn(imgs, fish_names, fish_masks, bounding_boxes, label, path_masks, path_annotations, path_imgs):
+def save_dataset_mask_rcnn(imgs, fish_names, fish_masks, bounding_boxes, label, path_masks, path_annotations, path_imgs):
 
     # Save images in a folder
     counter = 0
@@ -470,9 +474,7 @@ def create_dataset_mask_rcnn(imgs, fish_names, fish_masks, bounding_boxes, label
     rcf.save_annotations(imgs, bounding_boxes, fish_names, label, path_annotations)
 
 
-def main_classes(args=None):
-    # Load arguments
-    arguments = parse_arguments()
+def create_dataset_mask_rcnn(arguments):
 
     load_folder = '/fish_pics/input_images'
 
@@ -509,20 +511,25 @@ def main_classes(args=None):
                 isolatedFish, contoursFish, masks, bounding_boxes = isolate_fish(dst, img_list_fish, display=False)
 
                 isolatedFish = resize_img(isolatedFish, 10)
-                imgs = resize_img(imgs, 10)
+                imgs = resize_img(dst, 10)
 
                 # Create paths for folders
+                path_dataset = '/fish_pics/rcnn_dataset/images'
+
                 imgs_folder = '/fish_pics/rcnn_dataset/images'
                 path_imgs_folder = basedir + imgs_folder
-                print('path_imgs_folder', path_imgs_folder)
 
                 masks_folder = '/fish_pics/rcnn_dataset/masks'
                 path_masks_folder = basedir + masks_folder
 
                 annotations_folder = '/fish_pics/rcnn_dataset/annotations'
                 path_annotations_folder = basedir + annotations_folder
+
+                # Delete old dataset if it exists 
+                if exists(path_imgs_folder):
+                    shutil.rmtree(path_dataset)
                 
-                # Create folders if they are not created
+                # Create folders
                 if not exists(path_imgs_folder):
                     os.makedirs(path_imgs_folder)
                 
@@ -532,7 +539,8 @@ def main_classes(args=None):
                 if not exists(path_annotations_folder):
                     os.makedirs(path_annotations_folder)
 
-                create_dataset_mask_rcnn(
+                # Save dataset
+                save_dataset_mask_rcnn(
                     imgs=imgs,
                     fish_names=img_list_fish,
                     fish_masks=isolatedFish,
@@ -552,73 +560,31 @@ def main(args=None):
     # Load arguments
     arguments = parse_arguments()
 
-    # Load all the images
-    if arguments.undistorted:
-        load_folder_cod = '/fish_pics/undistorted/cods/'
-        load_folder_other = '/fish_pics/undistorted/other/'
-    else:
-        load_folder_cod = '/fish_pics/input_images/cods/'
-        load_folder_other = '/fish_pics/input_images/other/'
+    # Create dataset if requested
+    if arguments.make_new_data_set:
+        create_dataset_mask_rcnn(arguments)
 
+    # Create path to model
+    basedir = os.path.dirname(os.path.abspath(__file__))
+    models_path = os.path.join(basedir, 'models')
+    model_name = arguments.model_name
+    model_path = os.path.join(models_path, model_name)
+    
     # Check if we want to run the RCNN trainer
-    if arguments.run_rcnn:
+    if arguments.train_rcnn:
         # Run the RCNN trainer
-        print("Running the RCNN trainer...")
-        rcf.run_rcnn_trainer(arguments, load_folder_cod, load_folder_other)
-        exit()
+        rcf.run_rcnn_trainer(model_path)
+    
+    imgs = []
 
-    # Load all cod images
-    images, img_list_fish, img_list_abs_path = ftc.loadImages(folder=load_folder_cod, edit_images=False, show_img=False)
+    for img in imgs:
+        rcf.predict_rcnn(img, model_path)
 
-    # Load all other images
-    images_other, img_list_other, img_list_abs_path_other = ftc.loadImages(folder=load_folder_other, edit_images=False, show_img=False)
+    # ArUco marker calibration for size estimation, displays results of the calculated size
+    len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
 
-    # Do we want to calibrate before undistorting the image, if not, then run the fish isolation and detection
-    if arguments.calibrate_cam:
-        calibrate_camera()
-    else:
-        if not arguments.undistorted:
-            dst = undistort_imgs(images)
-            dst_other = undistort_imgs(images_other)
-        else:
-            dst = images
-            dst_other = images_other
-
-        # Resize images for presentation
-        resized = resize_img(dst, resizePercent, displayImages=False)
-
-        # Resize other images for presentation
-        resized_other = resize_img(dst_other, resizePercent, displayImages=False)
-
-        # Isolate fish contours
-        isolatedFish, contoursFish, cod_masks, bounding_boxes = isolate_fish(resized, img_list_fish, display=False)
-
-        # Isolate fish contours on others
-        isolatedFish_other, contoursFish_other, other_masks, bounding_boxes_other = isolate_fish(resized_other, img_list_other, display=False)
-
-        # Create dataset for cods training
-        create_dataset(arguments, images, img_list_fish, isolatedFish, bounding_boxes, "cod", arguments.image_dir_rcnn_images, arguments.image_dir_rcnn_annotations)
-
-        # Create dataset for other training
-        create_dataset(arguments, images_other, img_list_other, isolatedFish_other, bounding_boxes_other, "other", arguments.image_dir_rcnn_images, arguments.image_dir_rcnn_annotations)
-
-        # Validate datasets
-        rcf.validate_masks("fish_pics/rcnn_masks/annotations/images/")
-
-        # Load the prediction model
-        if arguments.run_prediction_model:
-            checkpoint, model, class_to_name_dict, device = predict.load_predition_model(arguments.checkpoint, arguments.device)
-
-            # Predict
-            predictions = predict.predict_species(img_list_abs_path, arguments.topk, checkpoint, model, class_to_name_dict,
-                                                device)
-
-            # ArUco marker calibration for size estimation, displays results of the calculated size
-            len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
-
-            # Precision calculation
-            pp.calc_len_est(img_list_abs_path, len_estimate)
-
+    # Precision calculation
+    pp.calc_len_est(img_list_abs_path, len_estimate)
 
 if __name__ == '__main__':
     main()
