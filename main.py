@@ -448,7 +448,6 @@ def create_dataset(arguments, imgs, fish_names, fish_masks, bounding_boxes, labe
 
 def create_dataset_mask_rcnn(imgs, fish_names, fish_masks, bounding_boxes, label, path_masks, path_annotations, path_imgs):
 
-    
     # Save images in a folder
     counter = 0
     for img in imgs:
@@ -470,17 +469,8 @@ def create_dataset_mask_rcnn(imgs, fish_names, fish_masks, bounding_boxes, label
 
     rcf.save_annotations(imgs, bounding_boxes, fish_names, label, path_annotations)
 
-def validate_masks_2():
-    folder = "fish_pics/rcnn_dataset/masks"
-    #folder = "fish_pics/PennFudanPed/PedMasks/"
-    for filename in os.listdir(folder):
-        img = cv2.imread(os.path.join(folder,filename))
-        if img is not None:
-            norm_image = cv2.normalize(img, None, alpha=0, beta=256, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-            cv2.imshow("Image", norm_image)
-            cv2.waitKey(0)
 
-def main_2(args=None):
+def main_classes(args=None):
     # Load arguments
     arguments = parse_arguments()
 
@@ -501,7 +491,7 @@ def main_2(args=None):
         for img_name in img_names:
             if not arguments.undistorted:
                 
-                # Find apth to each images
+                # Find a path to each images
                 path_img = os.path.join(path_class_folder, img_name)
                 img_list_fish = []
                 imgs = []
@@ -549,10 +539,12 @@ def main_2(args=None):
                     path_annotations=path_annotations_folder,
                     path_imgs=path_imgs_folder)
 
+                rcf.validate_masks("fish_pics/rcnn_masks/annotations/images/")
+
     print("Done creating dataset!")
 
 
-def main(args=None):
+def main_no_classes(args=None):
 
     # Load arguments
     arguments = parse_arguments()
@@ -608,7 +600,7 @@ def main(args=None):
         create_dataset(arguments, images_other, img_list_other, isolatedFish_other, bounding_boxes_other, "other", arguments.image_dir_rcnn_images, arguments.image_dir_rcnn_annotations)
 
         # Validate datasets
-        rcf.validate_masks()
+        rcf.validate_masks("fish_pics/rcnn_masks/annotations/images/")
 
         # Load the prediction model
         if arguments.run_prediction_model:
@@ -626,4 +618,4 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-    main_2()
+    main_classes()
