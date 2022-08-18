@@ -113,7 +113,7 @@ def run_rcnn_trainer(model_path):
     wandb.init(project="rcnn_fish_detection", entity="benmusak")
 
     wandb.config = {
-    "learning_rate": 0.005,
+    "learning_rate": 0.001,
     "epochs": 5,
     "batch_size": 2
     }
