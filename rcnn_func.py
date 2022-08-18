@@ -202,10 +202,12 @@ def test_rcnn(dataset_test, model, device):
     plt.show(im_normal)
     plt.axis("off")
     plt.show()
+    cv2.imwrite('im_normal', im_normal) 
 
     plt.show(im_mask)
     plt.axis("off")
     plt.show()
+    cv2.imwrite('im_mask', im_mask) 
 
 def validate_masks(path):
     folder = path
