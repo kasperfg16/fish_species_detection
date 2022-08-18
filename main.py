@@ -508,6 +508,9 @@ def main_classes(args=None):
                 # Isolate fish contours
                 isolatedFish, contoursFish, masks, bounding_boxes = isolate_fish(dst, img_list_fish, display=False)
 
+                isolatedFish = resize_img(isolatedFish, 10)
+                imgs = resize_img(imgs, 10)
+
                 # Create paths for folders
                 imgs_folder = '/fish_pics/rcnn_dataset/images'
                 path_imgs_folder = basedir + imgs_folder
@@ -539,7 +542,7 @@ def main_classes(args=None):
                     path_annotations=path_annotations_folder,
                     path_imgs=path_imgs_folder)
 
-                rcf.validate_masks("fish_pics/rcnn_masks/annotations/images/")
+        rcf.validate_masks("fish_pics/rcnn_dataset/masks/")
 
     print("Done creating dataset!")
 
@@ -618,4 +621,4 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-    main()
+    main_classes()
