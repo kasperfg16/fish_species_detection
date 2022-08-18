@@ -2,6 +2,7 @@ import math
 import sys
 import time
 import torch
+import wandb
 import torchvision.models.detection.mask_rcnn
 from coco_utils import get_coco_api_from_dataset
 from coco_eval import CocoEvaluator
@@ -34,6 +35,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         losses_reduced = sum(loss for loss in loss_dict_reduced.values())
 
         loss_value = losses_reduced.item()
+        wandb.log({"loss": loss_value})
 
         if not math.isfinite(loss_value):
             print("Loss is {}, stopping training".format(loss_value))
