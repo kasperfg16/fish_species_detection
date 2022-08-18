@@ -544,7 +544,7 @@ def main_classes(args=None):
     print("Done creating dataset!")
 
 
-def main_no_classes(args=None):
+def main(args=None):
 
     # Load arguments
     arguments = parse_arguments()
@@ -618,4 +618,4 @@ def main_no_classes(args=None):
 
 
 if __name__ == '__main__':
-    main_classes()
+    main()
