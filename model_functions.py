@@ -34,7 +34,7 @@ class EarlyStopping():
         elif self.counter > 0:
             self.status_early_stop = '\nCount reset'
             self.counter = 0
-            self.status_early_stop = '\nCount: ' + str(self.counter) + ' of ' + str(self.patience) + ' before early stopping because validation loss is bigger than training loss to many times (overfitting)'
+            self.status_early_stop += '\nCount: ' + str(self.counter) + ' of ' + str(self.patience) + ' before early stopping because validation loss is bigger than training loss to many times (overfitting)'
         else:
             self.status_early_stop = ''
             
@@ -224,7 +224,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     early_stopping = EarlyStopping(patience=patience, min_delta_percent=10)
     writer = SummaryWriter(comment='_' + str(k) + '_k_of_' + str(num_k) + '_k')
     count_best_acc = 0
-    count_limit = 500
+    count_limit = 1000
 
     # Run while 'ctrl+c' is not pressed
     try:
@@ -277,7 +277,6 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                 status_string += early_stopping.status_early_stop
                 if early_stopping.early_stop:
                     converged = True
-                    break
 
                 # Summary writer tensorboard
                 writer.add_scalar('Loss/train', training_loss, epoch)
