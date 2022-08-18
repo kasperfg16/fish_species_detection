@@ -268,8 +268,8 @@ def test_rcnn(dataset_test, model, device):
     plt.axis("off")
     plt.show()
 
-def validate_masks():
-    folder = "fish_pics/rcnn_masks/annotations/images/"
+def validate_masks(path):
+    folder = path
     #folder = "fish_pics/PennFudanPed/PedMasks/"
     for filename in os.listdir(folder):
         img = cv2.imread(os.path.join(folder,filename))
