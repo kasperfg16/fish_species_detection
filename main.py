@@ -5,6 +5,7 @@ from turtle import st
 import cv2
 import numpy as np
 import os
+import torch
 import argparse
 import predict
 import rcnn_func as rcf
@@ -571,20 +572,20 @@ def main(args=None):
     model_path = os.path.join(models_path, model_name)
     
     # Check if we want to run the RCNN trainer
+    test_dataset = []
     if arguments.train_rcnn:
         # Run the RCNN trainer
-        rcf.run_rcnn_trainer(model_path)
-    
-    imgs = []
+        test_dataset = rcf.run_rcnn_trainer(model_path)
 
-    for img in imgs:
-        rcf.predict_rcnn(img, model_path)
+    test_dataset_contour = []
+    for img in test_dataset:
+        test_dataset_contour.append(rcf.predict_rcnn(img, model_path))
 
     # ArUco marker calibration for size estimation, displays results of the calculated size
-    len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
+    # len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
 
     # Precision calculation
-    pp.calc_len_est(img_list_abs_path, len_estimate)
+    # pp.calc_len_est(img_list_abs_path, len_estimate)
 
 if __name__ == '__main__':
     main()

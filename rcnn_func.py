@@ -156,7 +156,7 @@ def run_rcnn_trainer(model_path):
                                                    gamma=0.1)
 
     # let's train it for 10 epochs
-    num_epochs = 100
+    num_epochs = 10
 
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
@@ -173,7 +173,8 @@ def run_rcnn_trainer(model_path):
     torch.save(model.state_dict(), model_path)
     print("Model saved.")
 
-    test_rcnn(dataset_test, device, model_path)
+    # test_rcnn(dataset_test, device, model_path)
+    return dataset_test
 
 
 def test_rcnn(dataset_test, device, model_path):
@@ -190,10 +191,22 @@ def test_rcnn(dataset_test, device, model_path):
             prediction = model([img.to(device)])
             print(prediction)
         
+        # Convert to PIL image type
         im_normal = Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
-        im_normal.show()
+        #im_normal.show()
         im_mask = Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
-        im_mask.show()
+        #im_mask.show()
+
+        # Convert from PIL image type to cv2 image type
+        open_cv_image_normal = np.array(im_normal) 
+        open_cv_image_normal = open_cv_image_normal[:, :, ::-1].copy() 
+        open_cv_image_mask = np.array(im_mask) 
+        open_cv_image_mask = open_cv_image_mask[:, :, ::-1].copy() 
+
+        # Display image with contours
+        __, contour, __ = cv2.findContours(open_cv_image_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(img, contour, -1, (0,255,0), 3)
+        cv2.imwrite("final_image_contour.jpg", img)
 
         type_im_normal= type(im_normal)
         type_im_mask= type(im_mask)
@@ -218,15 +231,29 @@ def predict_rcnn(img, model_path):
         prediction = model([img.to(device)])
         print(prediction)
     
+    # Convert to PIL image type
     im_normal = Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
     im_normal.show()
     im_mask = Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
     im_mask.show()
 
+    # Convert from PIL image type to cv2 image type
+    open_cv_image_normal = np.array(im_normal) 
+    open_cv_image_normal = open_cv_image_normal[:, :, ::-1].copy() 
+    open_cv_image_mask = np.array(im_mask) 
+    open_cv_image_mask = open_cv_image_mask[:, :, ::-1].copy() 
+
+    # Display image with contours
+    __, contour, __ = cv2.findContours(open_cv_image_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(img, contour, -1, (0,255,0), 3)
+    cv2.imwrite("image_contour_prediction_" + "count" + ".jpg", img)
+
     type_im_normal= type(im_normal)
     type_im_mask= type(im_mask)
     print('type_im_normal' , type_im_normal)
     print('type_im_mask' , type_im_mask)
+
+    return img
 
     count += 1
 
