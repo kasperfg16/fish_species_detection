@@ -138,4 +138,7 @@ acc_k_fold_val.txt
 .vscode
 .idea
 fish_pics/output_images/
-fish_pics/input_images/
+
+fish_pics/rcnn_dataset/
+wandb/
+models/
