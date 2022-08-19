@@ -3,6 +3,7 @@ import json
 import os
 import os.path
 from collections import OrderedDict
+import time
 
 import torch
 from torch import nn
@@ -225,11 +226,14 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     writer = SummaryWriter(comment='_' + str(k) + '_k_of_' + str(num_k) + '_k')
     count_best_acc = 0
     count_limit = 1000
+    times_up = False
+    program_starts = time.time()
+    hours_23_min_30 = 60*60*24.5
 
     # Run while 'ctrl+c' is not pressed
     try:
         # Either run until converged or until specified epoch number is reached.
-        while not converged:
+        while not converged or not times_up:
             for e in range(num_epochs):
 
                 epoch += 1
@@ -289,7 +293,13 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
                 file1.write(status_string)
                 file1.close()
                 
+                now = time.time()
+                train_time = now - program_starts
+
                 print(status_string)
+
+                if train_time >= hours_23_min_30:
+                    times_up = True
 
             if not arg_epochs == -1:
                 converged = True
