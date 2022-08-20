@@ -228,7 +228,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     count_limit = 1000
     times_up = False
     program_starts = time.time()
-    hours_23_min_30 = 60*60*24.5
+    hours_23_min_30 = 60*60*23.5
 
     # Run while 'ctrl+c' is not pressed
     try:
