@@ -105,7 +105,7 @@ def get_transform(train):
     return T.Compose(transforms)
 
 
-def run_rcnn_trainer(model_path):
+def run_rcnn_trainer(model_path, num_epochs):
 
     print("Running the mask RCNN trainer...")
 
@@ -154,9 +154,6 @@ def run_rcnn_trainer(model_path):
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                    step_size=3,
                                                    gamma=0.1)
-
-    # let's train it for 10 epochs
-    num_epochs = 10
 
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations

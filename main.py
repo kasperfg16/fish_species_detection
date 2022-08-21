@@ -335,6 +335,7 @@ def parse_arguments():
     parser.add_argument('--undistorted', type=bool, default=False, help='Classify undistorted images')
     parser.add_argument('--make_new_data_set', type=bool, default=False, help='Use images in fish_pics\input_images and create a new dataset')
     parser.add_argument('--model_name', type=str, default='model_1', help='Select the model that we want to use for instance segmentation')
+    parser.add_argument('--num_epochs', type=int, default=5, help='number of epoch to run for training')
 
     arguments = parser.parse_args()
 
@@ -575,7 +576,7 @@ def main(args=None):
     test_dataset = []
     if arguments.train_rcnn:
         # Run the RCNN trainer
-        test_dataset = rcf.run_rcnn_trainer(model_path)
+        test_dataset = rcf.run_rcnn_trainer(model_path, arguments.num_epochs)
 
     test_dataset_contour = []
     for img in test_dataset:
