@@ -214,14 +214,12 @@ def test_rcnn(dataset_test, device, model_path):
         count += 1
 
 
-def predict_rcnn(img, basedir, model_path):
+def predict_rcnn(img, model_path):
 
     # train on the GPU or on the CPU, if a GPU is not available
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-
-    model = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=True))
-    model.load_state_dict(torch.load(model_path))
+    model = torch.load(model_path)
 
     count = 0
     
