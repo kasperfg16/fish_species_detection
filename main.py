@@ -326,7 +326,7 @@ def parse_arguments():
                         help='Path to checkpoint')
     parser.add_argument('--image_dir_rcnn_images', type=str, default="./fish_pics/rcnn_masks/images/", help='Absolute path to image folder')
     parser.add_argument('--image_dir_rcnn_annotations', type=str, default="./fish_pics/rcnn_masks/annotations/", help='Absolute path to annotation folder')
-    parser.add_argument('--train_rcnn', type=bool, default=True, help='Train mask rcnn classifier')
+    parser.add_argument('--train_rcnn', type=bool, default=False, help='Train mask rcnn classifier')
     parser.add_argument('--run_prediction_model', type=bool, default=False, help='Classify undistorted images')
     parser.add_argument('--topk', type=int, default=5, help='Top k classes and probabilities')
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
