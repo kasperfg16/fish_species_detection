@@ -175,9 +175,10 @@ def run_rcnn_trainer(basedir, model_path, num_epochs):
     return dataset_test
 
 
-def test_rcnn(dataset_test, device, model_path):
+def test_rcnn(dataset_test, model_path):
 
     model = torch.load(model_path)
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     count = 0
     # pick one image from the test set
