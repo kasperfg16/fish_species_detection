@@ -105,7 +105,7 @@ def get_transform(train):
     return T.Compose(transforms)
 
 
-def run_rcnn_trainer(arguments, model_path, num_epochs):
+def run_rcnn_trainer(basedir, model_path, num_epochs):
 
     print("Running the mask RCNN trainer...")
 
@@ -124,8 +124,8 @@ def run_rcnn_trainer(arguments, model_path, num_epochs):
     # our dataset has two classes only - background and person
     num_classes = 2
     # use our dataset and defined transformations
-    dataset = FishDataset('./fish_pics/rcnn_dataset', get_transform(train=True))
-    dataset_test = FishDataset('./fish_pics/rcnn_dataset', get_transform(train=False))
+    dataset = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=True))
+    dataset_test = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=False))
 
     # split the dataset in train and test set
     indices = torch.randperm(len(dataset.imgs)).tolist() 
