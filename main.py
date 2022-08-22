@@ -319,7 +319,7 @@ def parse_arguments():
 
     # Command line arguments
     parser.add_argument('--google_colab', type=bool, default=False, help='Whether the program is running on Google Colab')
-    parser.add_argument('--validation_folder', type=str, default="./fish_pics/rcnn_dataset/validation", help='Folder containing the validation images after creating the dataset')
+    parser.add_argument('--validation_folder', type=str, default="./fish_pics/rcnn_dataset/validation/", help='Folder containing the validation images after creating the dataset')
     parser.add_argument('--image_dir', type=str, default="./fish_pics/input_images/", help='Absolute path to images')
     parser.add_argument('--checkpoint', type=str,
                         default='./checkpoint.pth',
