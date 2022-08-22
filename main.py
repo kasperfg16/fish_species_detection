@@ -580,9 +580,12 @@ def main(args=None):
         # Run the RCNN trainer
         test_dataset = rcf.run_rcnn_trainer(basedir, model_path, arguments.num_epochs)
 
-    test_dataset_contour = []
-    for img in test_dataset:
-        test_dataset_contour.append(rcf.predict_rcnn(img, model_path))
+    # test_dataset_contour = []
+    #for img in test_dataset:
+        #test_dataset_contour.append(rcf.predict_rcnn(img, model_path))
+    
+    img = "/content/drive/MyDrive/RCNN_FishDetection/fish_species_detection/fish_pics/input_images/cod/GOPR0100.JPG"
+    rcf.predict_rcnn(img, model_path)
 
     # ArUco marker calibration for size estimation, displays results of the calculated size
     # len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
