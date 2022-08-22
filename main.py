@@ -529,7 +529,7 @@ def create_dataset_mask_rcnn(arguments):
 
                 # Delete old dataset if it exists 
                 if exists(path_imgs_folder):
-                    shutil.rmtree(path_dataset)
+                    shutil.rmtree(path_imgs_folder)
                 
                 # Create folders
                 if not exists(path_imgs_folder):
