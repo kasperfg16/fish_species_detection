@@ -255,15 +255,23 @@ def predict_rcnn(img, model_path):
     count += 1
 
 
-def validate_masks(path):
-    folder = path
-    #folder = "fish_pics/PennFudanPed/PedMasks/"
-    for filename in os.listdir(folder):
-        img = cv2.imread(os.path.join(folder,filename))
-        if img is not None:
-            norm_image = cv2.normalize(img, None, alpha=0, beta=256, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-            cv2.imshow("Image", norm_image)
-            cv2.waitKey(0)
+def validate_masks(arguments, path):
+    if not arguments.google_colab:
+        folder = path
+        for filename in os.listdir(folder):
+            img = cv2.imread(os.path.join(folder,filename))
+            if img is not None:
+                norm_image = cv2.normalize(img, None, alpha=0, beta=256, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+                cv2.imshow("Image", norm_image)
+                cv2.waitKey(0)
+    else:
+        print("Using google colab does not allow for images to show. Saving images inside validation folder instead.")
+        folder = path
+        for filename in os.listdir(folder):
+            img = cv2.imread(os.path.join(folder,filename))
+            if img is not None:
+                norm_image = cv2.normalize(img, None, alpha=0, beta=256, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+                cv2.imwrite(arguments.validation_folder + filename + "_validation.jpg", img)
 
 
 # function to normalize a masks and save in a list

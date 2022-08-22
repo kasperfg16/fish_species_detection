@@ -318,6 +318,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Image Classifier Predictions')
 
     # Command line arguments
+    parser.add_argument('--google_colab', type=bool, default=False, help='Whether the program is running on Google Colab')
+    parser.add_argument('--validation_folder', type=str, default="./fish_pics/rcnn_dataset/validation", help='Folder containing the validation images after creating the dataset')
     parser.add_argument('--image_dir', type=str, default="./fish_pics/input_images/", help='Absolute path to images')
     parser.add_argument('--checkpoint', type=str,
                         default='./checkpoint.pth',
@@ -552,7 +554,7 @@ def create_dataset_mask_rcnn(arguments):
                     path_annotations=path_annotations_folder,
                     path_imgs=path_imgs_folder)
 
-        rcf.validate_masks("fish_pics/rcnn_dataset/masks/")
+        rcf.validate_masks(arguments, "fish_pics/rcnn_dataset/masks/")
 
     print("Done creating dataset!")
 
