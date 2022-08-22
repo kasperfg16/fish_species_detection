@@ -576,9 +576,9 @@ def main(args=None):
     
     # Check if we want to run the RCNN trainer
     test_dataset = []
-    if arguments.train_rcnn:
+    # if arguments.train_rcnn:
         # Run the RCNN trainer
-        test_dataset = rcf.run_rcnn_trainer(basedir, model_path, arguments.num_epochs)
+        # test_dataset = rcf.run_rcnn_trainer(basedir, model_path, arguments.num_epochs)
 
     # test_dataset_contour = []
     #for img in test_dataset:
