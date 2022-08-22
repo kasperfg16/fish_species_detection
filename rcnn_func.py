@@ -13,7 +13,7 @@ from engine import train_one_epoch, evaluate
 from matplotlib import pyplot as plt
 
 
-class PennFudanDataset(torch.utils.data.Dataset):
+class FishDataset(torch.utils.data.Dataset):
     def __init__(self, root, transforms=None):
         self.root = root
         self.transforms = transforms
@@ -124,8 +124,8 @@ def run_rcnn_trainer(model_path):
     # our dataset has two classes only - background and person
     num_classes = 2
     # use our dataset and defined transformations
-    dataset = PennFudanDataset('fish_pics/rcnn_dataset', get_transform(train=True))
-    dataset_test = PennFudanDataset('fish_pics/rcnn_dataset', get_transform(train=False))
+    dataset = FishDataset('fish_pics/rcnn_dataset', get_transform(train=True))
+    dataset_test = FishDataset('fish_pics/rcnn_dataset', get_transform(train=False))
 
     # split the dataset in train and test set
     indices = torch.randperm(len(dataset.imgs)).tolist() 
