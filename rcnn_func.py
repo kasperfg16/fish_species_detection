@@ -171,7 +171,7 @@ def run_rcnn_trainer(basedir, model_path, num_epochs):
     torch.save(model.state_dict(), model_path)
     print("Model saved.")
 
-    # test_rcnn(dataset_test, device, model_path)
+    test_rcnn(dataset_test, model_path)
     return dataset_test
 
 

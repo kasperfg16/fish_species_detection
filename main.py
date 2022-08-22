@@ -581,7 +581,7 @@ def main(args=None):
         test_dataset = rcf.run_rcnn_trainer(basedir, model_path, arguments.num_epochs)
 
     #test_dataset_contour.append(rcf.predict_rcnn(img, model_path))
-    rcf.test_rcnn(test_dataset, model_path)
+    # rcf.test_rcnn(test_dataset, model_path)
 
     # ArUco marker calibration for size estimation, displays results of the calculated size
     # len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
