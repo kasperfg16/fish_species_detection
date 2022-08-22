@@ -478,7 +478,7 @@ def save_dataset_mask_rcnn(imgs, fish_names, fish_masks, bounding_boxes, label, 
 
 def create_dataset_mask_rcnn(arguments):
 
-    load_folder = '/fish_pics/input_images'
+    load_folder = arguments.image_dir
 
     # Find path to folder where "train.py" python file is
     # Insures that we can run the script from anywhere and it will still work
