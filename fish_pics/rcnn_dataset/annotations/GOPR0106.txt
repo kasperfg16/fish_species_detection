@@ -1,7 +1,0 @@
-Image filename : "GOPR0106.jpg"
-Image size (X x Y x C) : 212 x 272 x 3
-Database : "fish_database"
-Objects with ground truth : 1 { No idea what to put here lol }
-Original label for object 1 "cods" : cods
-Bounding box for object 1 "cods" (Xmin, Ymin) - (Xmax, Ymax) : (671,858) - (2359, 1282)
-Pixel mask for object 1 "cods" : "c:\Users\Kaspe\OneDrive\Onenote\GitHub\fish_species_detection/fish_pics/rcnn_dataset/annotationsGOPR0106.png"
