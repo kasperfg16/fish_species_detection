@@ -324,8 +324,8 @@ def parse_arguments():
     parser.add_argument('--checkpoint', type=str,
                         default='./checkpoint.pth',
                         help='Path to checkpoint')
-    parser.add_argument('--image_dir_rcnn_images', type=str, default="./fish_pics/rcnn_masks/annotations/images/", help='Absolute path to image folder')
-    parser.add_argument('--image_dir_rcnn_annotations', type=str, default="./fish_pics/rcnn_masks/annotations/annotations/", help='Absolute path to annotation folder')
+    parser.add_argument('--image_dir_rcnn_images', type=str, default="./fish_pics/rcnn_masks/images/", help='Absolute path to image folder')
+    parser.add_argument('--image_dir_rcnn_annotations', type=str, default="./fish_pics/rcnn_masks/annotations/", help='Absolute path to annotation folder')
     parser.add_argument('--train_rcnn', type=bool, default=True, help='Train mask rcnn classifier')
     parser.add_argument('--run_prediction_model', type=bool, default=False, help='Classify undistorted images')
     parser.add_argument('--topk', type=int, default=5, help='Top k classes and probabilities')
@@ -578,7 +578,7 @@ def main(args=None):
     test_dataset = []
     if arguments.train_rcnn:
         # Run the RCNN trainer
-        test_dataset = rcf.run_rcnn_trainer(model_path, arguments.num_epochs)
+        test_dataset = rcf.run_rcnn_trainer(arguments, model_path, arguments.num_epochs)
 
     test_dataset_contour = []
     for img in test_dataset:
