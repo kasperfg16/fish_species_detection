@@ -271,7 +271,7 @@ def validate_masks(arguments, path):
             img = cv2.imread(os.path.join(folder,filename))
             if img is not None:
                 norm_image = cv2.normalize(img, None, alpha=0, beta=256, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-                cv2.imwrite(arguments.validation_folder + filename + "_validation.jpg", img)
+                cv2.imwrite(arguments.validation_folder + filename + "_validation.jpg", norm_image)
 
 
 # function to normalize a masks and save in a list
