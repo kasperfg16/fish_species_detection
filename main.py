@@ -580,7 +580,6 @@ def main(args=None):
         # Run the RCNN trainer
         test_dataset = rcf.run_rcnn_trainer(basedir, model_path, arguments.num_epochs)
 
-    #test_dataset_contour.append(rcf.predict_rcnn(img, model_path))
     if arguments.run_prediction_model:
         print("Running prediction model...")
         rcf.test_rcnn(basedir, model_path)

@@ -172,16 +172,17 @@ def test_rcnn(basedir, model_path):
 
     # our dataset has two classes only - background and fish
     model = get_model_instance_segmentation(2)
+
     # move model to the right device
     model.to(device)
 
     # Check if device is on GPU
     if device.type == 'cuda':
         print("Running on the GPU")
-        model = torch.load(model_path)
+        model.load_state_dict(torch.load(model_path))
     else:
         print("Running on the CPU")
-        model = torch.load(model_path, map_location=torch.device('cpu'))
+        model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 
     dataset_test = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=False))
     indices = torch.randperm(len(dataset_test.imgs)).tolist() 
