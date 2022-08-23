@@ -165,10 +165,14 @@ def run_rcnn_trainer(basedir, model_path, num_epochs):
     return dataset_test
 
 
-def test_rcnn(dataset_test, model_path):
+def test_rcnn(basedir, model_path):
 
     model = torch.load(model_path)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
+    dataset_test = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=False))
+    indices = torch.randperm(len(dataset_test.imgs)).tolist() 
+    dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
 
     count = 0
     # pick one image from the test set

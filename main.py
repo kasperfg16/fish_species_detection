@@ -327,7 +327,7 @@ def parse_arguments():
     parser.add_argument('--image_dir_rcnn_images', type=str, default="./fish_pics/rcnn_masks/images/", help='Absolute path to image folder')
     parser.add_argument('--image_dir_rcnn_annotations', type=str, default="./fish_pics/rcnn_masks/annotations/", help='Absolute path to annotation folder')
     parser.add_argument('--train_rcnn', type=bool, default=False, help='Train mask rcnn classifier')
-    parser.add_argument('--run_prediction_model', type=bool, default=False, help='Classify undistorted images')
+    parser.add_argument('--run_prediction_model', type=bool, default=True, help='Classify undistorted images')
     parser.add_argument('--topk', type=int, default=5, help='Top k classes and probabilities')
     parser.add_argument('--json', type=str, default='classes_dictonary.json', help='class_to_name json file')
     parser.add_argument('--device', type=str, default='cuda', help='\'cuda\' for GPU or \'cpu\' for CPU')
@@ -581,7 +581,10 @@ def main(args=None):
         test_dataset = rcf.run_rcnn_trainer(basedir, model_path, arguments.num_epochs)
 
     #test_dataset_contour.append(rcf.predict_rcnn(img, model_path))
-    # rcf.test_rcnn(test_dataset, model_path)
+    if arguments.run_prediction_model:
+        print("Running prediction model...")
+        rcf.test_rcnn(basedir, model_path)
+        #rcf.test_rcnn(test_dataset, model_path)
 
     # ArUco marker calibration for size estimation, displays results of the calculated size
     # len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
