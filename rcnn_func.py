@@ -1,4 +1,6 @@
+from codecs import escape_encode
 import os
+from pickle import TRUE
 import numpy as np
 import torch
 import torchvision
@@ -165,7 +167,7 @@ def run_rcnn_trainer(basedir, model_path, num_epochs):
     return dataset_test
 
 
-def test_rcnn(basedir, model_path):
+def test_rcnn(basedir, model_path, use_morphology=False):
 
     # Get the right device
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -207,18 +209,28 @@ def test_rcnn(basedir, model_path):
         # Convert from PIL image type to cv2 image type
         open_cv_image_normal = np.array(im_normal) 
         open_cv_image_normal = open_cv_image_normal[:, :, ::-1].copy() 
+        open_cv_image_normal = cv2.flip(open_cv_image_normal, 1)
         open_cv_image_mask = np.array(im_mask) 
-        open_cv_image_mask = open_cv_image_mask[:, :, ::-1].copy() 
+        open_cv_image_mask = open_cv_image_mask[:, ::-1].copy() 
 
-        # Display image with contours
-        __, contour, __ = cv2.findContours(open_cv_image_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(img, contour, -1, (0,255,0), 3)
-        cv2.imwrite("final_image_contour.jpg", img)
+        if use_morphology:
+            # Do some morphological operations to get rid of noise
+            kernel = np.ones((5,5),np.uint8)
+            open_cv_image_mask_morph = cv2.erode(open_cv_image_mask, kernel, iterations=1)
 
-        type_im_normal= type(im_normal)
-        type_im_mask= type(im_mask)
-        print('type_im_normal' , type_im_normal)
-        print('type_im_mask' , type_im_mask)
+            cv2.imshow("Mask_mporh", open_cv_image_mask_morph)
+            cv2.imshow("Mask_normal", open_cv_image_mask)
+            #cv2.imshow("Normal", open_cv_image_normal)
+            cv2.waitKey(0)
+
+            # Safe the combined image
+            contour, __ = cv2.findContours(open_cv_image_mask_morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        else:
+            # Safe the combined image
+            contour, __ = cv2.findContours(open_cv_image_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            
+        cv2.drawContours(open_cv_image_normal, contour, -1, (0,255,0), 1)
+        cv2.imwrite(basedir + "/fish_pics/rcnn_dataset/validation/" + "final_image_contour_" + str(count) + ".jpg", open_cv_image_normal)
 
         count += 1
 
