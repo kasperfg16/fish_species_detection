@@ -427,12 +427,12 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
 
         cv2.polylines(n, [box], True, (255, 0, 0), 2)
 
-        cv2.putText(n, "Width {} cm".format(w_cm, 1), (int(x - 300), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 2,
-                    (10, 20, 0), 2)
-        cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 0), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 2,
-                    (10, 20, 0), 2)
-        cv2.putText(n, "Species: {}".format(prediction[count], 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 2,
-                    (10, 20, 0), 2)
+        cv2.putText(n, "Width {} cm".format(w_cm, 1), (int(x - 300), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 1.1,
+                    (100, 200, 0), 2)
+        cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 0), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 1.1,
+                    (100, 200, 0), 2)
+        cv2.putText(n, "Species: {}".format(prediction[count], 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 1.1,
+                    (100, 200, 0), 2)
 
         cv2.imshow("Picture: " + str(fish_names[count]), n)
         cv2.waitKey(0)
