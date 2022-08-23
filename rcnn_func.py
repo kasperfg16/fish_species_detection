@@ -27,7 +27,6 @@ class FishDataset(torch.utils.data.Dataset):
         # load images ad masks
         img_path = os.path.join(self.root, "images", self.imgs[idx])
         mask_path = os.path.join(self.root, "masks", self.masks[idx])
-        print(mask_path)
         img = Image.open(img_path).convert("RGB")
         # note that we haven't converted the mask to RGB,
         # because each color corresponds to a different instance
