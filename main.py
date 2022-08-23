@@ -356,6 +356,8 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
     :return: Displays fish size
     """
 
+    print("Started loading arUco calibration for object size estimation...")
+
     len_estimate = []
 
     # Load ArUco image for calibration
@@ -368,7 +370,7 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
     list_aruco = [aruco_marker_img]
     aruco_marker_img_undi_list = undistort_imgs(list_aruco)
     aruco_marker_img = aruco_marker_img_undi_list[0]
-    aruco_marker_img = resize_img(aruco_marker_img, resizePercent)
+    aruco_marker_img = resize_img(aruco_marker_img, 10)
     cv2.imshow("aruco_marker_img", aruco_marker_img)
     cv2.waitKey(0)
 
@@ -398,6 +400,7 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
     # Display all the details of each fish in each image
     count = 0
     for n in imgs:
+        print(type(fishContours[count]))
         rect = cv2.minAreaRect(fishContours[count])
         (x, y), (w, h), angle = rect
 
@@ -582,11 +585,10 @@ def main(args=None):
 
     if arguments.run_prediction_model:
         print("Running prediction model...")
-        rcf.test_rcnn(basedir, model_path)
-        #rcf.test_rcnn(test_dataset, model_path)
+        img_names, img_normal, contours = rcf.test_rcnn(basedir, model_path)
+        # ArUco marker calibration for size estimation, displays results of the calculated size
+        len_estimate = load_ArUco_cali_objectsize_and_display(img_normal, img_names, contours, arguments, "cod")
 
-    # ArUco marker calibration for size estimation, displays results of the calculated size
-    # len_estimate = load_ArUco_cali_objectsize_and_display(isolatedFish, img_list_fish, contoursFish, arguments, predictions)
 
     # Precision calculation
     # pp.calc_len_est(img_list_abs_path, len_estimate)
