@@ -168,7 +168,14 @@ def run_rcnn_trainer(basedir, model_path, num_epochs):
 def test_rcnn(basedir, model_path):
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    model = torch.load(model_path)
+
+    # Check if device is on GPU
+    if device.type == 'cuda':
+        print("Running on the GPU")
+        model = torch.load(model_path)
+    else:
+        print("Running on the CPU")
+        model = torch.load(model_path, map_location=torch.device('cpu'))
 
     dataset_test = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=False))
     indices = torch.randperm(len(dataset_test.imgs)).tolist() 
