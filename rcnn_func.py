@@ -4,7 +4,6 @@ import torch
 import torchvision
 import cv2
 import utils
-import wandb
 import transforms as T
 from PIL import Image
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -109,15 +108,6 @@ def get_transform(train):
 def run_rcnn_trainer(basedir, model_path, num_epochs):
 
     print("Running the mask RCNN trainer...")
-
-    # Wandb for validation
-    wandb.init(project="rcnn_fish_detection", entity="benmusak")
-
-    wandb.config = {
-    "learning_rate": 0.001,
-    "epochs": 5,
-    "batch_size": 2
-    }
 
     # train on the GPU or on the CPU, if a GPU is not available
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
