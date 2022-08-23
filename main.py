@@ -400,8 +400,12 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
     # Display all the details of each fish in each image
     count = 0
     for n in imgs:
-        print(type(fishContours[count]))
-        rect = cv2.minAreaRect(fishContours[count])
+        
+        # Since we are using minAreaRect to get the fish size, we need to convert the contours to a list of points
+        # https://stackoverflow.com/questions/71990194/opencv-minarearect-points-is-not-a-numerical-tuple
+        contours_flat = np.vstack(fishContours[count]).squeeze()
+        rect = cv2.minAreaRect(contours_flat)
+
         (x, y), (w, h), angle = rect
 
         # Get width and height of objects in cm
@@ -424,15 +428,15 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
         cv2.polylines(n, [box], True, (255, 0, 0), 2)
 
         cv2.putText(n, "Width {} cm".format(w_cm, 1), (int(x - 300), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 2,
-                    (100, 200, 0), 2)
+                    (10, 20, 0), 2)
         cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 0), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 2,
-                    (100, 200, 0), 2)
+                    (10, 20, 0), 2)
         cv2.putText(n, "Species: {}".format(prediction[count], 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 2,
-                    (100, 200, 0), 2)
+                    (10, 20, 0), 2)
 
         cv2.imshow("Picture: " + str(fish_names[count]), n)
         cv2.waitKey(0)
-        cv2.destroyWindow("Picture: " + str(fish_names[count]))
+        # cv2.destroyWindow("Picture: " + str(fish_names[count]))
 
         len_estimate.append(w_cm)
         
