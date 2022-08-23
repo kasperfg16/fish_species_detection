@@ -112,7 +112,7 @@ def run_rcnn_trainer(basedir, model_path, num_epochs):
     # train on the GPU or on the CPU, if a GPU is not available
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-    # our dataset has two classes only - background and person
+    # our dataset has two classes only - background and fish
     num_classes = 2
     # use our dataset and defined transformations
     dataset = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=True))
@@ -167,7 +167,13 @@ def run_rcnn_trainer(basedir, model_path, num_epochs):
 
 def test_rcnn(basedir, model_path):
 
+    # Get the right device
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
+    # our dataset has two classes only - background and fish
+    model = get_model_instance_segmentation(2)
+    # move model to the right device
+    model.to(device)
 
     # Check if device is on GPU
     if device.type == 'cuda':
