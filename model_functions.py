@@ -228,7 +228,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
     count_limit = 1000
     times_up = False
     program_starts = time.time()
-    hours_23_min_30 = int(60*60*23.5)
+    max_train_time = int(60*60*23)
 
     # Run while 'ctrl+c' is not pressed
     try:
@@ -298,7 +298,7 @@ def train_classifier(model, optimizer, criterion, arg_epochs, train_loader, vali
 
                 print(status_string)
 
-                if train_time >= hours_23_min_30:
+                if train_time >= max_train_time:
                     times_up = True
                     converged = True
 
