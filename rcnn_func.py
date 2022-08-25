@@ -1,19 +1,21 @@
-from codecs import escape_encode
 import os
-from pickle import TRUE
-import numpy as np
 import torch
 import torchvision
 import cv2
 import utils
 import glob
+import camera_cal as ccal
 import transforms as T
+import functions_openCV as fcv
+import numpy as np
+from codecs import escape_encode
+from pickle import TRUE
 from PIL import Image
 from PIL import ImageChops
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from engine import train_one_epoch, evaluate
-from matplotlib import pyplot as plt
+from os.path import exists
 
 
 class FishDataset(torch.utils.data.Dataset):
@@ -244,50 +246,6 @@ def test_rcnn(basedir, model_path, use_morphology=False):
     return image_names_list, img_normal, contours
 
 
-'''
-def predict_rcnn(img, model_path):
-
-    # train on the GPU or on the CPU, if a GPU is not available
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-
-    model = torch.load(model_path)
-
-    count = 0
-    
-    # put the model in evaluation mode
-    model.eval()
-    with torch.no_grad():
-        prediction = model([img.to(device)])
-        print(prediction)
-    
-    # Convert to PIL image type
-    im_normal = Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
-    im_normal.show()
-    im_mask = Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
-    im_mask.show()
-
-    # Convert from PIL image type to cv2 image type
-    open_cv_image_normal = np.array(im_normal) 
-    open_cv_image_normal = open_cv_image_normal[:, :, ::-1].copy() 
-    open_cv_image_mask = np.array(im_mask) 
-    open_cv_image_mask = open_cv_image_mask[:, :, ::-1].copy() 
-
-    # Display image with contours
-    __, contour, __ = cv2.findContours(open_cv_image_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(img, contour, -1, (0,255,0), 3)
-    cv2.imwrite("image_contour_prediction_" + "count" + ".jpg", img)
-
-    type_im_normal= type(im_normal)
-    type_im_mask= type(im_mask)
-    print('type_im_normal' , type_im_normal)
-    print('type_im_mask' , type_im_mask)
-
-    return img
-
-    count += 1
-'''
-
-
 def load_images_from_folder(folder):
     image_list = []
     image_names = []
@@ -333,7 +291,6 @@ def validate_masks(arguments, path):
                 cv2.imwrite(arguments.validation_folder + filename + "_validation.jpg", norm_image)
 
 
-# function to normalize a masks and save in a list
 def normalize_masks(masks):
     normalized_masks = []
     for mask in masks:
@@ -354,7 +311,6 @@ def normalize_masks(masks):
     return normalized_masks
     
 
-# function to save name of masks annotations in a text file
 def save_annotations(imgs, bounding_box, imgs_names, label, path):
     counter = 0
 
@@ -373,4 +329,122 @@ def save_annotations(imgs, bounding_box, imgs_names, label, path):
             counter += 1
 
 
-            
+def create_dataset(arguments, imgs, fish_names, fish_masks, bounding_boxes, label, path_images, path_annotation):
+
+    print("Creating dataset...")
+
+    # Save normalized masks images in a folder
+    normalized_masks = normalize_masks(fish_masks)
+    counter = 0
+    for mask in normalized_masks:
+        cv2.imwrite(path_images + fish_names[counter] + ".png", mask)
+        counter += 1
+    
+    save_annotations(imgs, bounding_boxes, fish_names, label, path_annotation)
+
+    print("Done creating dataset!")
+
+
+def save_dataset_mask_rcnn(imgs, fish_names, fish_masks, bounding_boxes, label, path_masks, path_annotations, path_imgs):
+
+    # Save images in a folder
+    counter = 0
+    for img in imgs:
+        path_img = os.path.join(path_imgs, fish_names[counter])
+        path_img = path_img + '.png'
+        print(path_img)
+        cv2.imwrite(path_img, img)
+        counter += 1
+
+    # Save masks in a folder
+    counter = 0
+    normalized_masks = normalize_masks(fish_masks)
+    for mask in normalized_masks:
+        path_img = os.path.join(path_masks, fish_names[counter])
+        path_img = path_img + '.png'
+        print(path_img)
+        cv2.imwrite(path_img, mask)
+        counter += 1
+
+    save_annotations(imgs, bounding_boxes, fish_names, label, path_annotations)
+
+
+def create_dataset_mask_rcnn(arguments):
+
+    load_folder = arguments.image_dir
+
+    # Find path to folder where "train.py" python file is
+    # Insures that we can run the script from anywhere and it will still work
+    basedir = os.path.dirname(os.path.abspath(__file__))
+    name_classes_folder = load_folder
+    path_classes_folder = basedir + name_classes_folder
+
+    # Find classes
+    classes = next(os.walk(path_classes_folder))[1]
+
+    for _class in classes:
+        path_class_folder = os.path.join(path_classes_folder, _class)
+        _, _, img_names = next(os.walk(path_class_folder))
+        for img_name in img_names:
+            if not arguments.undistorted:
+                
+                # Find a path to each images
+                path_img = os.path.join(path_class_folder, img_name)
+                img_list_fish = []
+                imgs = []
+
+                # Find image name with no extention e.g. ".png"
+                img_name_no_ex = os.path.splitext(img_name)[0]
+                img_list_fish.append(img_name_no_ex)
+                img = cv2.imread(path_img)
+                imgs.append(img)
+
+                # Undistort images
+                dst = ccal.undistort_imgs(imgs)
+
+                # Isolate fish contours
+                isolatedFish, contoursFish, masks, bounding_boxes = fcv.isolate_fish(dst, img_list_fish, display=False)
+
+                isolatedFish = fcv.resize_imgs(isolatedFish, 10)
+                imgs = fcv.resize_imgs(dst, 10)
+
+                # Create paths for folders
+                path_dataset = '/fish_pics/rcnn_dataset/images'
+
+                imgs_folder = '/fish_pics/rcnn_dataset/images'
+                path_imgs_folder = basedir + imgs_folder
+
+                masks_folder = '/fish_pics/rcnn_dataset/masks'
+                path_masks_folder = basedir + masks_folder
+
+                annotations_folder = '/fish_pics/rcnn_dataset/annotations'
+                path_annotations_folder = basedir + annotations_folder
+
+                # Delete old dataset if it exists 
+                # if exists(path_imgs_folder):
+                #    shutil.rmtree(path_imgs_folder)
+                
+                # Create folders
+                if not exists(path_imgs_folder):
+                    os.makedirs(path_imgs_folder)
+                
+                if not exists(path_masks_folder):
+                    os.makedirs(path_masks_folder)
+                
+                if not exists(path_annotations_folder):
+                    os.makedirs(path_annotations_folder)
+
+                # Save dataset
+                save_dataset_mask_rcnn(
+                    imgs=imgs,
+                    fish_names=img_list_fish,
+                    fish_masks=isolatedFish,
+                    bounding_boxes=bounding_boxes,
+                    label=_class,
+                    path_masks=path_masks_folder,
+                    path_annotations=path_annotations_folder,
+                    path_imgs=path_imgs_folder)
+
+        validate_masks(arguments, "fish_pics/rcnn_dataset/masks/")
+
+    print("Done creating dataset!")

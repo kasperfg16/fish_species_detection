@@ -1,53 +1,25 @@
 import copy
 import math
-import os
 import warnings
-
 import cv2
+import csv
 import numpy as np
-from matplotlib import pyplot as plt  # --- Is this still used in final?
-
 import extremeImageProcessing as eip
+from matplotlib import pyplot as plt
 
 
-def loadImages(path, edit_images, show_img=False, scaling_percentage=30):
-    """
-    Loads all the images inside a file.
+def distance_between_points(p1, p2):
+    ''' Returns the distance between two points '''
+    distance = ((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** 0.5
+    return abs(distance)
 
-    :return: All the images in a list and a list of the corresponding file names.
-    """
 
-    images = []
-    class_names = []
-    img_list = os.listdir(path)
-    print("Loading in images...")
-    print("Total images found:", len(img_list))
-    for cl in img_list:
-        # Find all the images in the file and save them in an array without the ".jpg"
-        cur_img = cv2.imread(f"{path}/{cl}", 1)
-        img_name = os.path.splitext(cl)[0]
-
-        # Do some quick images processing to get better pictures if the user wants to
-        if edit_images:
-            cur_img_re = resizeImg(cur_img, scaling_percentage)
-            cur_img = cur_img_re
-
-        # Show the image before we append it, to make sure it is read correctly
-        if show_img:
-            cv2.imshow(f"Loaded image: {img_name}", cur_img)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-
-        # Append them into the array
-        images.append(cur_img)
-        class_names.append(img_name)
-
-    # Remove the image window after we have checked all the pictures
-    cv2.destroyAllWindows()
-
-    print("Done loading the images!")
-
-    return images, class_names
+def save_length_estimates(length_estimates, fish_names, path_length_estimates):
+    with open(path_length_estimates, 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['fish_name', 'length_estimate'])
+        for i in range(len(length_estimates)):
+            writer.writerow([fish_names[i], length_estimates[i]])
 
 
 def save_img(img, save_image_path):
@@ -67,24 +39,6 @@ def save_img(img, save_image_path):
             cv2.imwrite(save_image_path + f"\\fish{count}.jpg", n)
     else:
         cv2.imwrite(save_image_path + "\\fish.jpg", img)
-
-
-def resizeImg(img, scale_percent):
-    """
-    Resizes the image by a scaling percent.
-
-    :param img: The image to resize
-    :param scale_percent: The percent to scale by
-    :return: The resized image
-    """
-
-    width = int(img.shape[1] * scale_percent / 100)
-    height = int(img.shape[0] * scale_percent / 100)
-    dim = (width, height)
-
-    resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
-
-    return resized
 
 
 def percentage_damage(mask, img):
@@ -287,7 +241,7 @@ def morphology_operations(masks, images, open_kern_val, close_kern_val, change_k
 
 
 ############# THE REST FROM HERE IS EXPERIMENTAL AND ALSO CONTIANS OPENCV FUNCTIONS ##########
-############# THEY ARE NOT PART OF THE MAIN PROGRAM.                                 ##########
+############# THEY ARE NOT PART OF THE MAIN PROGRAM.                                ##########
 
 
 def createDict():

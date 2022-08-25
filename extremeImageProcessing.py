@@ -1,6 +1,5 @@
 import copy
 import warnings
-
 import cv2
 import numpy as np
 
