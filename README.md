@@ -137,10 +137,10 @@ Repo for fish species detection project at Aalborg University
 
 2. ### See all the arguments
 
-    E.g. for [train_k_fold_val.py](train_k_fold_val.py) run:
+    E.g. for [main.py](main.py) run:
 
     ``` bash
-    python train_k_fold_val.py --help
+    python main.py --help
     ```
 
 3. ### Calibrate camera
@@ -153,21 +153,12 @@ Repo for fish species detection project at Aalborg University
 
     To train the model put images into [fish_pics\input_images](fish_pics\input_images)
 
-    To add another class, create a new folder inside [fish_pics\input_images](fish_pics\input_images) and upload images of this new class into this folder. E.g **fish_pics\input_images\tortiose**
-
-    Then run [train_k_fold_val.py](train_k_fold_val.py) like so: `python .\main.py --num_of_k 1`
-
     To stop the training press ctrl+c **ONCE**. This will stop the training at the point where it is and save the model.
 
 6. ### Run main code
 
     Run [main.py](main.py)
 
-## Train your own classifier on your own dataset with google colab
-
-Follow the link and follow the instructions
-
-[Google Colab Classifier](https://colab.research.google.com/drive/1qksJvIxpnAULe_8XfI04jG13a-3klOKA?usp=sharing)
 
 ## Train your own R-CNN on your own dataset with google colab
 
@@ -182,12 +173,6 @@ Follow the link and follow the instructions
     <https://ryanwingate.com/intro-to-machine-learning/deep-learning-with-pytorch/loading-image-data-into-pytorch/>
 
 2. <https://docs.microsoft.com/en-us/learn/modules/intro-computer-vision-pytorch/2-image-data>
-
-3. Using a pretrained model to perform image classification
-
-    <https://github.com/LeanManager/PyTorch_Image_Classifier/blob/master/train.py>
-
-    Youtube video: <https://www.youtube.com/watch?v=zFA8Cm13Xmk&t=513s>
 
 4. For R-CNN masking a PyTorch tutorial was followed and implemented. The dataset is created to follow the same structure as PennFudan dataset which is presented in the tutorial.
 
