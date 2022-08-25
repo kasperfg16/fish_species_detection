@@ -56,7 +56,7 @@ Repo for fish species detection project at Aalborg University
     https://github.com/kasperfg16/fish_species_detection.git
     ```
 
-    or if you want clone this branch:
+    or if you want to clone this branch:
 
     ``` bash
     !git clone --branch=rcnn_branching_cleaned https://github.com/kasperfg16/fish_species_detection.git
