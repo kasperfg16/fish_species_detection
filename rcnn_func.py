@@ -120,6 +120,7 @@ def run_rcnn_trainer(basedir, model_path, num_epochs):
 
     # our dataset has two classes only - background and fish
     num_classes = 2
+    
     # use our dataset and defined transformations
     dataset = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=True))
     dataset_test = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=False))
