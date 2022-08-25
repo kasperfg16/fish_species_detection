@@ -1,4 +1,5 @@
 import os
+import shutil
 import torch
 import torchvision
 import cv2
@@ -183,11 +184,12 @@ def test_rcnn(basedir, model_path, use_morphology=False):
 
     # Check if device is on GPU
     if device.type == 'cuda':
-        print("Running on the GPU")
         model.load_state_dict(torch.load(model_path))
     else:
         print("Running on the CPU")
         model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    
+    print("Running mask-RCNN on ", device.type, 'device - ', torch.cuda.get_device_name(device))
 
     dataset_test = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=False))
     indices = torch.randperm(len(dataset_test.imgs)).tolist()
@@ -329,22 +331,6 @@ def save_annotations(imgs, bounding_box, imgs_names, label, path):
             counter += 1
 
 
-def create_dataset_classification(arguments, imgs, fish_names, fish_masks, bounding_boxes, label, path_images, path_annotation):
-
-    print("Creating dataset...")
-
-    # Save normalized masks images in a folder
-    normalized_masks = normalize_masks(fish_masks)
-    counter = 0
-    for mask in normalized_masks:
-        cv2.imwrite(path_images + fish_names[counter] + ".png", mask)
-        counter += 1
-    
-    save_annotations(imgs, bounding_boxes, fish_names, label, path_annotation)
-
-    print("Done creating dataset!")
-
-
 def save_dataset_mask_rcnn(imgs, fish_names, fish_masks, bounding_boxes, label, path_masks, path_annotations, path_imgs):
 
     # Save images in a folder
@@ -421,8 +407,8 @@ def create_dataset_mask_rcnn(arguments):
                 path_annotations_folder = basedir + annotations_folder
 
                 # Delete old dataset if it exists 
-                # if exists(path_imgs_folder):
-                #    shutil.rmtree(path_imgs_folder)
+                if exists(path_imgs_folder):
+                    shutil.rmtree(path_imgs_folder)
                 
                 # Create folders
                 if not exists(path_imgs_folder):
