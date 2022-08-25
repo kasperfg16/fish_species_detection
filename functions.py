@@ -139,8 +139,8 @@ def detect_woundspots(imgs, show_img=False):
     return mask_woundspots, segmented_woundspots_imgs, marked_woundspots_imgs, booleans_woundspot, damage_percentage_array
 
 
-# Used for the trackbars
 def nothing(x):
+    # Used for the trackbars
     pass
 
 

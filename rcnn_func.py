@@ -329,7 +329,7 @@ def save_annotations(imgs, bounding_box, imgs_names, label, path):
             counter += 1
 
 
-def create_dataset(arguments, imgs, fish_names, fish_masks, bounding_boxes, label, path_images, path_annotation):
+def create_dataset_classification(arguments, imgs, fish_names, fish_masks, bounding_boxes, label, path_images, path_annotation):
 
     print("Creating dataset...")
 

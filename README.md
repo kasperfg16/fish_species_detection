@@ -53,7 +53,7 @@ Repo for fish species detection project at Aalborg University
 
 ## Perquisites
 
-- This is developed for windows and only tested on Window 11 OS
+- This is developed for windows and only tested on Window 10 and 11 OS
 
 ## Setup
 
@@ -107,6 +107,26 @@ Repo for fish species detection project at Aalborg University
 
 ## How to use
 
+0. ### Folder structure
+
+    Create a folder structure as followed:
+
+    - Project_Folder
+        - fish_pics
+            - input_images
+                - cods
+                    - (All the images that needs to be converted to a dataset for R-CNN)
+        - rcnn_dataset
+            - annotations (Currently only used for saving each photos annotation)
+            - images
+                - (All the images from the dataset creator will be saved here)
+            - Masks
+                - (All the masks from the dataset creator will be saved here)
+            - Validation
+                - (The output from the model-guesses will be saved in this folder)
+        - models
+            - model_1 (for now, the model needs to be named "model_1" to be found. This will be changed in the future.)
+
 1. ### See all the arguments
 
     Go through **Setup**
@@ -137,20 +157,6 @@ Repo for fish species detection project at Aalborg University
 
     To stop the training press ctrl+c **ONCE**. This will stop the training at the point where it is and save the model.
 
-5. ### K-fold validation
-
-    Run [train_k_fold_val.py](train_k_fold_val.py)
-
-    NOTE: The number of k's is set to default of 5. To change this run:
-
-    ``` bash
-    Run python train_k_fold_val.py --num_of_k = <number of k that you want>
-    ```
-
-    ``` bash
-    Run python train_k_fold_val.py --epocs = <number of epocs that you want>
-    `
-
 6. ### Run main code
 
     Run [main.py](main.py)
@@ -159,7 +165,13 @@ Repo for fish species detection project at Aalborg University
 
 Follow the link and follow the instructions
 
-<https://colab.research.google.com/drive/1qksJvIxpnAULe_8XfI04jG13a-3klOKA?usp=sharing>
+[Google Colab Classifier](https://colab.research.google.com/drive/1qksJvIxpnAULe_8XfI04jG13a-3klOKA?usp=sharing)
+
+## Train your own R-CNN on your own dataset with google colab
+
+Follow the link and follow the instructions
+
+[Google Colab R-CNN masking](https://colab.research.google.com/drive/1oxojIhiJwssvCTv5AOTZ3y7nDfHh2IfN?usp=sharing)
 
 ## Inspiration used to create this project
 
@@ -174,3 +186,7 @@ Follow the link and follow the instructions
     <https://github.com/LeanManager/PyTorch_Image_Classifier/blob/master/train.py>
 
     Youtube video: <https://www.youtube.com/watch?v=zFA8Cm13Xmk&t=513s>
+
+4. For R-CNN masking a PyTorch tutorial was followed and implemented. The dataset is created to follow the same structure as PennFudan dataset which is presented in the tutorial.
+
+    <https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html>
