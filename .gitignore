@@ -142,3 +142,4 @@ fish_pics/output_images/
 fish_pics/rcnn_dataset/
 wandb/
 models/
+dev_avg.txt
