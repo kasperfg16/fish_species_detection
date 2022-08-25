@@ -64,10 +64,10 @@ def main(args=None):
     if arguments.run_prediction_model:
 
         print("Running prediction model...")
-        img_names, img_normal, contours = rcf.test_rcnn(basedir, model_path, use_morphology=False)
+        img_names, img_normal, contours, precisions, labels = rcf.test_rcnn(basedir, model_path, use_morphology=False)
 
         # ArUco marker calibration for size estimation, displays results of the calculated size
-        len_estimate, fish_names_sorted = ftc.load_ArUco_cali_objectsize_and_display(img_normal, img_names, contours, arguments, "cod", display=True)
+        len_estimate, fish_names_sorted = ftc.load_ArUco_cali_objectsize_and_display(img_normal, img_names, contours, arguments, labels, precisions, display=True)
 
     # Precision calculation
     pp.calc_len_est_names(fish_names_sorted, len_estimate)

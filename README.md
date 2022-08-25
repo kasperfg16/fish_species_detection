@@ -5,7 +5,7 @@ Repo for fish species detection project at Aalborg University
 ## Methods used
 
 1.
-    A dataset of 310 sea creatures including 34 different species where made using a custom made photobox.
+    A dataset of 156 sea creatures including 34 different species where made using a custom made photobox.
     - For each sea creature the dataset contains:
         - The lenght of the sea creature
         - The species of the sea creature
@@ -120,9 +120,9 @@ Repo for fish species detection project at Aalborg University
             - annotations (Currently only used for saving each photos annotation)
             - images
                 - (All the images from the dataset creator will be saved here)
-            - Masks
+            - masks
                 - (All the masks from the dataset creator will be saved here)
-            - Validation
+            - validation
                 - (The output from the model-guesses will be saved in this folder)
         - models
             - model_1 (for now, the model needs to be named "model_1" to be found. This will be changed in the future.)
