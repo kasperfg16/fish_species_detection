@@ -3,6 +3,7 @@ from ctypes import sizeof
 import shutil
 from turtle import st
 import cv2
+import csv
 import numpy as np
 import os
 import torch
@@ -344,7 +345,7 @@ def parse_arguments():
     return arguments
 
 
-def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, arguments, prediction):
+def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, arguments, prediction, display=False):
 
     """
     Uses an ArUco marker to calibrate and predict the fish size.
@@ -399,6 +400,7 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
 
     # Display all the details of each fish in each image
     count = 0
+    fish_names_sorted = []
     for n in imgs:
         
         # Since we are using minAreaRect to get the fish size, we need to convert the contours to a list of points
@@ -423,26 +425,31 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
         box = np.int0(box)
 
         # Display for the user
-        cv2.circle(n, (int(x), int(y)), 5, (0, 0, 255), -1)
+        if display:
+            cv2.circle(n, (int(x), int(y)), 5, (0, 0, 255), -1)
 
-        cv2.polylines(n, [box], True, (255, 0, 0), 2)
+            cv2.polylines(n, [box], True, (255, 0, 0), 2)
 
-        cv2.putText(n, "Width {} cm".format(w_cm, 1), (int(x - 300), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 1.1,
-                    (100, 200, 0), 2)
-        cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 0), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 1.1,
-                    (100, 200, 0), 2)
-        cv2.putText(n, "Species: {}".format(prediction[count], 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 1.1,
-                    (100, 200, 0), 2)
+            cv2.putText(n, "Width {} cm".format(w_cm, 1), (int(x - 100), int(y - 80)), cv2.FONT_HERSHEY_PLAIN, 1.1,
+                        (100, 200, 0), 2)
+            cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 0), int(y - 50)), cv2.FONT_HERSHEY_PLAIN, 1.1,
+                        (100, 200, 0), 2)
+            #cv2.putText(n, "Species: {}".format(prediction[count], 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 1.1,
+                        #(100, 200, 0), 2)
+            cv2.putText(n, "Species: {}".format(prediction, 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 1.1,
+                        (100, 200, 0), 2)
 
-        cv2.imshow("Picture: " + str(fish_names[count]), n)
-        cv2.waitKey(0)
+            cv2.imshow("Picture: " + str(fish_names[count]), n)
+            cv2.waitKey(0)
         # cv2.destroyWindow("Picture: " + str(fish_names[count]))
 
+        # Save the ordered names so they match the order of the length estimates
+        fish_names_sorted.append(fish_names[count])
         len_estimate.append(w_cm)
         
         count += 1
 
-    return len_estimate
+    return len_estimate, fish_names_sorted
 
 
 def create_dataset(arguments, imgs, fish_names, fish_masks, bounding_boxes, label, path_images, path_annotation):
@@ -566,6 +573,15 @@ def create_dataset_mask_rcnn(arguments):
     print("Done creating dataset!")
 
 
+# function that saves image names and length estimates in a csv file
+def save_length_estimates(length_estimates, fish_names, path_length_estimates):
+    with open(path_length_estimates, 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['fish_name', 'length_estimate'])
+        for i in range(len(length_estimates)):
+            writer.writerow([fish_names[i], length_estimates[i]])
+
+
 def main(args=None):
 
     # Load arguments
@@ -589,13 +605,16 @@ def main(args=None):
 
     if arguments.run_prediction_model:
         print("Running prediction model...")
-        img_names, img_normal, contours = rcf.test_rcnn(basedir, model_path)
+        img_names, img_normal, contours = rcf.test_rcnn(basedir, model_path, use_morphology=False)
         # ArUco marker calibration for size estimation, displays results of the calculated size
-        len_estimate = load_ArUco_cali_objectsize_and_display(img_normal, img_names, contours, arguments, "cod")
+        len_estimate, fish_names_sorted = load_ArUco_cali_objectsize_and_display(img_normal, img_names, contours, arguments, "cod", display=True)
 
+        #save_length_estimates(len_estimate, fish_names_sorted, basedir + "/length_estimates.csv")
 
     # Precision calculation
-    # pp.calc_len_est(img_list_abs_path, len_estimate)
+    pp.calc_len_est_names(fish_names_sorted, len_estimate)
+    #pp.calc_len_est(img_list_abs_path, len_estimate)
+
 
 if __name__ == '__main__':
     main()

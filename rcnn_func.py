@@ -6,8 +6,10 @@ import torch
 import torchvision
 import cv2
 import utils
+import glob
 import transforms as T
 from PIL import Image
+from PIL import ImageChops
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from engine import train_one_epoch, evaluate
@@ -18,7 +20,6 @@ class FishDataset(torch.utils.data.Dataset):
     def __init__(self, root, transforms=None):
         self.root = root
         self.transforms = transforms
-        self.image_names = []
         # load all image files, sorting them to
         # ensure that they are aligned
         self.imgs = list(sorted(os.listdir(os.path.join(root, "images"))))
@@ -28,7 +29,6 @@ class FishDataset(torch.utils.data.Dataset):
         # load images ad masks
         img_path = os.path.join(self.root, "images", self.imgs[idx])
         mask_path = os.path.join(self.root, "masks", self.masks[idx])
-        self.image_names.append(self.imgs[idx])
         img = Image.open(img_path).convert("RGB")
         # note that we haven't converted the mask to RGB,
         # because each color corresponds to a different instance
@@ -168,7 +168,7 @@ def run_rcnn_trainer(basedir, model_path, num_epochs):
     return dataset_test
 
 
-def test_rcnn(basedir, model_path, use_morphology=True):
+def test_rcnn(basedir, model_path, use_morphology=False):
 
     # Get the right device
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -176,7 +176,7 @@ def test_rcnn(basedir, model_path, use_morphology=True):
     # our dataset has two classes only - background and fish
     model = get_model_instance_segmentation(2)
 
-    # move model to the right device
+    # Move model to the right device
     model.to(device)
 
     # Check if device is on GPU
@@ -188,26 +188,34 @@ def test_rcnn(basedir, model_path, use_morphology=True):
         model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 
     dataset_test = FishDataset(basedir + '/fish_pics/rcnn_dataset', get_transform(train=False))
-    img_names = dataset_test.image_names
-    indices = torch.randperm(len(dataset_test.imgs)).tolist() 
+    indices = torch.randperm(len(dataset_test.imgs)).tolist()
     dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
+
+    # Load in images and names so we can check which image it is we are testing
+    images, image_names = load_images_from_folder(basedir + '/fish_pics/rcnn_dataset')
 
     count = 0
     contours = []
     img_normal = []
+    image_names_list = []
     # pick one image from the test set
     for img in dataset_test:
         img, _ = dataset_test[count]
-        print("Image name: " + img_names[count])
+
         # put the model in evaluation mode
         model.eval()
+
         with torch.no_grad():
             prediction = model([img.to(device)])
             print(prediction)
-        
+
         # Convert to PIL image type
         im_normal = Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
         im_mask = Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
+        
+        # Find the image name by brute force, not the best method, but it works
+        img_names = find_image_name(im_normal, images, image_names)
+        image_names_list.append(img_names)
 
         # Convert from PIL image type to cv2 image type
         open_cv_image_normal = np.array(im_normal) 
@@ -221,26 +229,22 @@ def test_rcnn(basedir, model_path, use_morphology=True):
             kernel = np.ones((5,5),np.uint8)
             open_cv_image_mask_morph = cv2.erode(open_cv_image_mask, kernel, iterations=1)
 
-            #cv2.imshow("Mask_morph", open_cv_image_mask_morph)
-            #cv2.imshow("Mask_normal_mask", open_cv_image_mask)
-            #cv2.imshow("Normal", open_cv_image_normal)
-            #cv2.waitKey(0)
-
             contour, __ = cv2.findContours(open_cv_image_mask_morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         else:
             contour, __ = cv2.findContours(open_cv_image_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             
         cv2.drawContours(open_cv_image_normal, contour, -1, (0,255,0), 1)
-        cv2.imwrite(basedir + "/fish_pics/rcnn_dataset/validation/" + "final_image_contour_" + img_names[count], open_cv_image_normal)
+        cv2.imwrite(basedir + "/fish_pics/rcnn_dataset/validation/" + "final_image_contour_" + img_names, open_cv_image_normal)
         
         contours.append(contour)
         img_normal.append(open_cv_image_normal)
 
         count += 1
 
-    return img_names, img_normal, contours
+    return image_names_list, img_normal, contours
 
 
+'''
 def predict_rcnn(img, model_path):
 
     # train on the GPU or on the CPU, if a GPU is not available
@@ -281,6 +285,33 @@ def predict_rcnn(img, model_path):
     return img
 
     count += 1
+'''
+
+
+def load_images_from_folder(folder):
+    image_list = []
+    image_names = []
+    for filename in glob.glob(folder + "/images/*.png"): #assuming png
+        im=Image.open(filename)
+        filename = filename.replace(folder + '/images\\', '')
+        image_names.append(filename)
+        image_list.append(im)
+
+    return image_list, image_names
+
+
+def find_image_name(img, img_set, names):
+
+    count = 0
+
+    for im in img_set:
+        diff = ImageChops.difference(img, im)
+
+        if not diff.getbbox():
+            print("Found name: " + names[count])
+            return names[count]
+        
+        count += 1
 
 
 def validate_masks(arguments, path):
