@@ -202,6 +202,8 @@ def test_rcnn(basedir, model_path, use_morphology=False):
     contours = []
     img_normal = []
     image_names_list = []
+    precisions = []
+    labels = []
     # pick one image from the test set
     for img in dataset_test:
         img, _ = dataset_test[count]
@@ -216,6 +218,22 @@ def test_rcnn(basedir, model_path, use_morphology=False):
         # Convert to PIL image type
         im_normal = Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
         im_mask = Image.fromarray(prediction[0]['masks'][0, 0].mul(255).byte().cpu().numpy())
+
+        # Get the precision
+        precision = prediction[0]['scores'][0].item()
+        precisions.append(precision)
+
+        # print the precision
+        print("Precision: " + str(precision))
+
+        # Get the label
+        label = prediction[0]['labels'][0].item()
+        if label == 1:
+            label = "fish"
+        labels.append(label)
+
+        # Print the label
+        print("Label: " + str(label))
         
         # Find the image name by brute force, not the best method, but it works
         img_names = find_image_name(im_normal, images, image_names)
@@ -245,7 +263,7 @@ def test_rcnn(basedir, model_path, use_morphology=False):
 
         count += 1
 
-    return image_names_list, img_normal, contours
+    return image_names_list, img_normal, contours, precisions, labels
 
 
 def load_images_from_folder(folder):

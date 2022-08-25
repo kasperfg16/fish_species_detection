@@ -206,7 +206,7 @@ def isolate_fish(imgs, img_list_fish, display=False):
     return isolated_fish, conlistReturn, mask_cod, bounding_boxes
 
 
-def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, arguments, prediction, display=False):
+def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, arguments, prediction, precisions, display=False):
 
     """
     Uses an ArUco marker to calibrate and predict the fish size.
@@ -295,11 +295,10 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
                         (100, 200, 0), 2)
             cv2.putText(n, "Height {} cm".format(h_cm, 1), (int(x + 0), int(y - 50)), cv2.FONT_HERSHEY_PLAIN, 1.1,
                         (100, 200, 0), 2)
-            #cv2.putText(n, "Species: {}".format(prediction[count], 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 1.1,
-                        #(100, 200, 0), 2)
-            cv2.putText(n, "Species: {}".format(prediction, 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 1.1,
+            cv2.putText(n, "Type: {}".format(prediction[count], 1), (int(x - 100), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 1.1,
                         (100, 200, 0), 2)
-
+            cv2.putText(n, "Precision: {}".format(precisions[count], 1), (int(x), int(y + 90)), cv2.FONT_HERSHEY_PLAIN, 1.1,
+                        (100, 200, 0), 2)
             cv2.imshow("Picture: " + str(fish_names[count]), n)
             cv2.waitKey(0)
         # cv2.destroyWindow("Picture: " + str(fish_names[count]))
