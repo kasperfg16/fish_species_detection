@@ -1,5 +1,6 @@
 import os
 import argparse
+import camera_cal as camcal
 import precision_plot as pp
 import rcnn_func as rcf
 import functions_openCV as ftc
@@ -55,11 +56,14 @@ def main(args=None):
     model_name = arguments.model_name
     model_path = os.path.join(models_path, model_name)
     
+    # Check if we want to calibrate the camera
+    if arguments.calibrate_cam:
+        camcal.calibrate_camera(arguments)
+
     # Check if we want to run the RCNN trainer
-    test_dataset = []
     if arguments.train_rcnn:
         # Run the RCNN trainer
-        test_dataset = rcf.run_rcnn_trainer(basedir, model_path, arguments.num_epochs)
+        rcf.run_rcnn_trainer(basedir, model_path, arguments.num_epochs)
 
     if arguments.run_prediction_model:
 

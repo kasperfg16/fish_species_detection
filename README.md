@@ -12,12 +12,7 @@ Repo for fish species detection project at Aalborg University
         - Two images from different sides of the sea creature
 
 2.
-    Pytorch is used along with a pre-trained model (VGG16 - <https://pytorch.org/vision/main/models/generated/torchvision.models.vgg16.html>). The model pre-trained model containing weights that has been obtained by training it using the IMAGENET1K_V1 dataset. The output of the pre-trained model is given to a classifier that is trained on the data set created in this project. The final model is thereby a pre-trained model combined with a classifier. The input to the model is the .png image taken directly with a GoPro camera. The output of the final model is the k-most probable species.
-
-    More on the model and the general structure of the model and how it is used: <https://www.youtube.com/watch?v=zFA8Cm13Xmk&t=513s>
-    **NOTE: Some hyperparamtres have been changed and also some of the structure of the code.**
-
-    As of 03/07/2022, The classifier have only been trained on two classes i.e. "cod" and "other"
+    Pytorch is used along with a pre-trained Mask R-CNN model that is fine-tuned to fit our own dataset of fish. This implementation is based on the [TORCHVISION OBJECT DETECTION FINETUNING TUTORIAL](https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html#torchvision-object-detection-finetuning-tutorial) tutorial by PyTorch and follows the same dataset structure. For this fine-tuned model, COCO ResNet50 from faster-rcnnn is used.
 
 3.
     A calibration session is done where a checker board is used for calibration <https://github.com/opencv/opencv/blob/4.x/doc/pattern.png>
@@ -48,8 +43,6 @@ Repo for fish species detection project at Aalborg University
 
     - <https://aaudk.sharepoint.com/:i:/r/sites/Fiskeprojekt/Delte%20dokumenter/General/Figure/Real_vs_estimated_avg_subtracted.png?csf=1&web=1&e=LOvK0w>
 
-8.
-    A stratified k-fold cross-validation is done as described here: <https://en.wikipedia.org/wiki/Cross-validation_(statistics)#:~:text=out%20cross%2Dvalidation.-,k%2Dfold%20cross%2Dvalidation,-%5Bedit%5D>
 
 ## Perquisites
 
@@ -61,6 +54,12 @@ Repo for fish species detection project at Aalborg University
 
     ``` bash
     https://github.com/kasperfg16/fish_species_detection.git
+    ```
+
+    or if you want clone this branch:
+
+    ``` bash
+    !git clone --branch=rcnn_branching_cleaned https://github.com/kasperfg16/fish_species_detection.git
     ```
 
 2. Install conda
@@ -103,29 +102,34 @@ Repo for fish species detection project at Aalborg University
         pip install -r requirements.txt
         ```
 
+        If you are on windows, please install pycocotools with this command:
+
+        ``` bash
+        pip install git+https://github.com/gautamchitnis/cocoapi.git@cocodataset-master#subdirectory=PythonAPI
+        ```
+
+    - d)
+         Create a folder structure as followed:
+
+        - Project_Folder
+            - fish_pics
+                - input_images
+                    - cods
+                        - (All the images that needs to be converted to a dataset for R-CNN)
+            - rcnn_dataset
+                - annotations (Currently only used for saving each photos annotation for debugging)
+                - images
+                    - (All the images from the dataset creator will be saved here)
+                - masks
+                    - (All the masks from the dataset creator will be saved here)
+                - validation
+                    - (The output from the model-guesses will be saved in this folder)
+            - models
+                - model_1 (for now, the model needs to be named "model_1" to be found. This will be changed in the future.)
+
     Now you're ready to run the code
 
 ## How to use
-
-0. ### Folder structure
-
-    Create a folder structure as followed:
-
-    - Project_Folder
-        - fish_pics
-            - input_images
-                - cods
-                    - (All the images that needs to be converted to a dataset for R-CNN)
-        - rcnn_dataset
-            - annotations (Currently only used for saving each photos annotation)
-            - images
-                - (All the images from the dataset creator will be saved here)
-            - masks
-                - (All the masks from the dataset creator will be saved here)
-            - validation
-                - (The output from the model-guesses will be saved in this folder)
-        - models
-            - model_1 (for now, the model needs to be named "model_1" to be found. This will be changed in the future.)
 
 1. ### See all the arguments
 
@@ -143,9 +147,7 @@ Repo for fish species detection project at Aalborg University
 
     Take images of checkerboard pattern (6x9) with the camera that you want to calibrate and save images in [calibration_imgs](calibration_imgs) folder. [Checkerboard pattern (6x9)](https://github.com/opencv/opencv/blob/4.x/doc/pattern.png)
 
-    When running [train_k_fold_val.py](train_k_fold_val.py) use the undistort argument like so: `python .\train_k_fold_val.py --calibrate_cam True`
-
-    The same can be done with `python .\main.py --calibrate_cam True`
+    Use the calibrate camera argument: `python .\main.py --calibrate_cam True`
 
 4. ### Train the model
 

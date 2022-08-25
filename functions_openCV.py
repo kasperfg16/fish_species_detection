@@ -655,7 +655,6 @@ def load_ArUco_cali_objectsize_and_display(imgs, fish_names, fishContours, argum
                         (100, 200, 0), 2)
             cv2.imshow("Picture: " + str(fish_names[count]), n)
             cv2.waitKey(0)
-        # cv2.destroyWindow("Picture: " + str(fish_names[count]))
 
         # Save the ordered names so they match the order of the length estimates
         fish_names_sorted.append(fish_names[count])
