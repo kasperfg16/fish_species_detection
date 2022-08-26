@@ -43,20 +43,13 @@ Repo for fish species detection project at Aalborg University
     A bounding box is created around the of cod in the masks images. The lenght of the fish is found by taking the mm/pixel ratio and applying to the lenght of the bounding box. This gives the lenght of the fish.
 
 9.
-    A sample of 145 cods is taken. The lenght estimation method is used and comparred with the lenght that were measured physically when the dataset was created. This gives the following results:
-
-    - <https://aaudk.sharepoint.com/:i:/r/sites/Fiskeprojekt/Delte%20dokumenter/General/Figure/Real_vs_estimated.png?csf=1&web=1&e=4lzsQk>
-
-    - <https://aaudk.sharepoint.com/sites/Fiskeprojekt/Delte%20dokumenter/General/Figure/Error_at_different_lenghts.png?csf=1&web=1&e=ww5OMj&cid=a4625146-1a0b-4337-8ccb-2e87acecb9c1>
+    A sample of 145 cods is taken. The lenght estimation method is used and comparred with the lenght that were measured physically when the dataset was created.
 
     There is correlation between the measured and estimated data. Therefore the mean of the errors of the sample is subrated from the estimated lenght. This gives the following results:
 
-    - <https://aaudk.sharepoint.com/:i:/r/sites/Fiskeprojekt/Delte%20dokumenter/General/Figure/Error_at_different_lenghts_avg_subtracted.png?csf=1&web=1&e=CuWQ6k>
+    - <https://aaudk.sharepoint.com/:i:/r/sites/Fiskeprojekt/Delte%20dokumenter/General/Figure/Error_at_different_lenghts_avg_subtracted_mask_rcnn.png?csf=1&web=1&e=80Qjfn>
 
-    - <https://aaudk.sharepoint.com/:i:/r/sites/Fiskeprojekt/Delte%20dokumenter/General/Figure/Real_vs_estimated_avg_subtracted.png?csf=1&web=1&e=LOvK0w>
-
-10.
-    A stratified k-fold cross-validation is done as described here: <https://en.wikipedia.org/wiki/Cross-validation_(statistics)#:~:text=out%20cross%2Dvalidation.-,k%2Dfold%20cross%2Dvalidation,-%5Bedit%5D>
+    - <https://aaudk.sharepoint.com/:i:/r/sites/Fiskeprojekt/Delte%20dokumenter/General/Figure/Real_vs_estimated_avg_subtracted_sample_size_312_mask_rcnn.png?csf=1&web=1&e=5IBTqD>
 
 ## Perquisites
 
@@ -114,7 +107,7 @@ Repo for fish species detection project at Aalborg University
 
 ## How to use
 
-0. ### Folder structure
+1. ### Folder structure
 
     Create a folder structure as followed:
 
@@ -133,10 +126,6 @@ Repo for fish species detection project at Aalborg University
                 - (The output from the model-guesses will be saved in this folder)
         - models
             - model_1 (for now, the model needs to be named "model_1" to be found. This will be changed in the future.)
-
-1. ### See all the arguments
-
-    Go through **Setup**
 
 2. ### See all the arguments
 
@@ -164,15 +153,9 @@ Repo for fish species detection project at Aalborg University
 
     To stop the training press ctrl+c **ONCE**. This will stop the training at the point where it is and save the model.
 
-6. ### Run main code
+5. ### Run main code
 
     Run [main.py](main.py)
-
-## Train your own classifier on your own dataset with google colab
-
-Follow the link and follow the instructions
-
-[Google Colab Classifier](https://colab.research.google.com/drive/1qksJvIxpnAULe_8XfI04jG13a-3klOKA?usp=sharing)
 
 ## Train your own R-CNN on your own dataset with google colab
 
